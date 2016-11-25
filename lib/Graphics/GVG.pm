@@ -40,9 +40,9 @@ my $DSL = <<'END_DSL';
     :default ::= action => _do_first_arg
 
 
-    Functions ::= Function SemiColon action => _do_build_ast_obj
+    Functions ::= Function+ action => _do_build_ast_obj
 
-    Function ::= LineFunc
+    Function ::= LineFunc SemiColon
 
     LineFunc ::= 
         'line' OpenParen
@@ -51,6 +51,10 @@ my $DSL = <<'END_DSL';
 
     Number ~ Digits
         | Digits Dot Digits
+        | Negative Digits
+        | Negative Digits Dot Digits
+
+    Negative ~ '-'
 
     Color ~ '#' HexDigits
 
@@ -114,9 +118,9 @@ sub _do_first_arg
 
 sub _do_build_ast_obj
 {
-    my ($self, $ast_list) = @_;
+    my ($self, @ast_list) = @_;
     my $ast = Graphics::GVG::AST->new({
-        commands => [ $ast_list ],
+        commands => \@ast_list,
     });
     return $ast;
 }
