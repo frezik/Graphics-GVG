@@ -28,7 +28,7 @@ use Graphics::GVG::AST;
 use Graphics::GVG::AST::Line;
 
 my $LINES = <<'END';
-    line( #ff33ff00, 0, 0, 1, 1 );
+    line( #ff33ff00, 0.0, 0.0, 1.0, 1.1 );
 END
 
 
@@ -41,10 +41,10 @@ isa_ok( $ast, 'Graphics::GVG::AST' );
 
 my $expect_ast = Graphics::GVG::AST->new;
 my $line_ast = Graphics::GVG::AST::Line->new({
-    x1 => 0,
-    y1 => 0,
-    x2 => 1,
-    y2 => 1,
+    x1 => '0.0',
+    y1 => '0.0',
+    x2 => '1.0',
+    y2 => 1.1,
     color => 0xff33ff00,
 });
 $expect_ast->push_command( $line_ast );

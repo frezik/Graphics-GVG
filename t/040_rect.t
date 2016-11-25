@@ -28,7 +28,7 @@ use Graphics::GVG::AST;
 use Graphics::GVG::AST::Rect;
 
 my $LINES = <<'END';
-    rect( #ff33ff00, 0, 1, 2, 3 );
+    rect( #ff33ff00, 0, 1, 2, 3.1 );
 END
 
 
@@ -44,7 +44,7 @@ my $rect_ast = Graphics::GVG::AST::Rect->new({
     x => 0,
     y => 1,
     width => 2,
-    height => 3,
+    height => 3.1,
     color => 0xff33ff00,
 });
 $expect_ast->push_command( $rect_ast );

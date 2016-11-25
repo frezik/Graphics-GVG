@@ -31,7 +31,12 @@ use Graphics::GVG::AST::Command;
 
 with 'Graphics::GVG::AST::Command';
 
-has [qw{ x1 x2 y1 y2 color }] => (
+has [qw{ x1 x2 y1 y2 }] => (
+    is => 'ro',
+    isa => 'Num',
+    default => 0.0,
+);
+has color => (
     is => 'ro',
     isa => 'Int',
     default => 0,

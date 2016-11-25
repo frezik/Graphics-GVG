@@ -28,7 +28,7 @@ use Graphics::GVG::AST;
 use Graphics::GVG::AST::Circle;
 
 my $LINES = <<'END';
-    circle( #ff33ff00, 0, 0, 5 );
+    circle( #ff33ff00, 0, 0, 5.1 );
 END
 
 
@@ -43,7 +43,7 @@ my $expect_ast = Graphics::GVG::AST->new;
 my $circle_ast = Graphics::GVG::AST::Circle->new({
     cx => 0,
     cy => 0,
-    r => 5,
+    r => 5.1,
     color => 0xff33ff00,
 });
 $expect_ast->push_command( $circle_ast );
