@@ -1,0 +1,3 @@
+line( #ff33ffff, 0, 0, 1, 1 );
+line( #ff33ffff, 1, 1, 1, -1 );
+line( #ff33ffff, 1, -1, 0, 0 );

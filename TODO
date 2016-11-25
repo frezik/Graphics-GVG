@@ -2,8 +2,12 @@
 * Arc
 * Bezier curve
 * Regular polygons
-* OpenGL demo render
-* SVG render
+* Comments
+* SVG renderer
+* OpenGL renderer
+    * Supports all commands
+    * Supports all effects
 * Inkscape extension
     * Reading
     * Writing
+* Documentation
