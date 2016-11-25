@@ -21,11 +21,13 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 4;
+package Graphics::GVG::AST::Command;
+
 use strict;
 use warnings;
+use Moose::Role;
 
-use_ok( 'Graphics::GVG::AST::Command' );
-use_ok( 'Graphics::GVG::AST' );
-use_ok( 'Graphics::GVG::AST::Line' );
-use_ok( 'Graphics::GVG' );
+
+1;
+__END__
+

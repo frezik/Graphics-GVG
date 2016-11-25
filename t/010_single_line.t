@@ -21,11 +21,32 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 4;
+use Test::More tests => 3;
 use strict;
-use warnings;
+use Graphics::GVG;
+use Graphics::GVG::AST;
+use Graphics::GVG::AST::Line;
 
-use_ok( 'Graphics::GVG::AST::Command' );
-use_ok( 'Graphics::GVG::AST' );
-use_ok( 'Graphics::GVG::AST::Line' );
-use_ok( 'Graphics::GVG' );
+my $LINES = <<'END';
+    line( #ff33ff00, 0, 0, 1, 1 );
+END
+
+
+my $gvg = Graphics::GVG->new;
+isa_ok( $gvg, 'Graphics::GVG' );
+
+my $ast = $gvg->parse( $LINES );
+isa_ok( $ast, 'Graphics::GVG::AST' );
+
+
+my $expect_ast = Graphics::GVG::AST->new;
+my $line_ast = Graphics::GVG::AST::Line->new({
+    x1 => 0,
+    y1 => 0,
+    x2 => 1,
+    y2 => 1,
+    color => 0xff33ff00,
+});
+$expect_ast->push_command( $line_ast );
+
+is_deeply( $ast, $expect_ast );
