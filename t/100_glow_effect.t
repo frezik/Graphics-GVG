@@ -21,16 +21,45 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-package Graphics::GVG::AST::Command;
-
+use Test::More tests => 3;
 use strict;
-use warnings;
-use Moose::Role;
-use Graphics::GVG::AST::Node;
+use Graphics::GVG;
+use Graphics::GVG::AST;
+use Graphics::GVG::AST::Line;
+use Graphics::GVG::AST::Glow;
 
-with 'Graphics::GVG::AST::Node';
+my $LINES = <<'END';
+    glow {
+        line( #ff33ff00, 0.0, 0.0, 1.0, 1.1 );
+        line( #ff33ff00, 0.0, 0.0, 1.0, 0.0 );
+    }
+END
 
 
-1;
-__END__
+my $gvg = Graphics::GVG->new;
+isa_ok( $gvg, 'Graphics::GVG' );
 
+my $ast = $gvg->parse( $LINES );
+isa_ok( $ast, 'Graphics::GVG::AST' );
+
+
+my $expect_ast = Graphics::GVG::AST->new;
+my $line_ast = Graphics::GVG::AST::Line->new({
+    x1 => '0.0',
+    y1 => '0.0',
+    x2 => '1.0',
+    y2 => 1.1,
+    color => 0xff33ff00,
+});
+my $line2_ast = Graphics::GVG::AST::Line->new({
+    x1 => '0.0',
+    y1 => '0.0',
+    x2 => '1.0',
+    y2 => '0.0',
+    color => 0xff33ff00,
+});
+my $glow_ast = Graphics::GVG::AST::Glow->new;
+$glow_ast->push_command( $_ ) for $line_ast, $line2_ast;
+$expect_ast->push_command( $glow_ast );
+
+is_deeply( $ast, $expect_ast );

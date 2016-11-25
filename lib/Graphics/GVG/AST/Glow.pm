@@ -21,16 +21,19 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-package Graphics::GVG::AST::Command;
+package Graphics::GVG::AST::Glow;
 
 use strict;
 use warnings;
-use Moose::Role;
-use Graphics::GVG::AST::Node;
+use Moose;
+use namespace::autoclean;
+use Graphics::GVG::AST::Effect;
 
-with 'Graphics::GVG::AST::Node';
+with 'Graphics::GVG::AST::Effect';
 
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
 1;
 __END__
 

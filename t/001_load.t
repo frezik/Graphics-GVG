@@ -21,13 +21,16 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 6;
+use Test::More tests => 9;
 use strict;
 use warnings;
 
+use_ok( 'Graphics::GVG::AST::Node' );
 use_ok( 'Graphics::GVG::AST::Command' );
+use_ok( 'Graphics::GVG::AST::Effect' );
 use_ok( 'Graphics::GVG::AST' );
 use_ok( 'Graphics::GVG::AST::Circle' );
+use_ok( 'Graphics::GVG::AST::Glow' );
 use_ok( 'Graphics::GVG::AST::Line' );
 use_ok( 'Graphics::GVG::AST::Rect' );
 use_ok( 'Graphics::GVG' );

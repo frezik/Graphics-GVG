@@ -31,10 +31,16 @@ use Moose;
 use namespace::autoclean;
 use Marpa::R2;
 use Graphics::GVG::AST::Command;
+use Graphics::GVG::AST::Effect;
 use Graphics::GVG::AST;
 use Graphics::GVG::AST::Circle;
+use Graphics::GVG::AST::Glow;
 use Graphics::GVG::AST::Line;
 use Graphics::GVG::AST::Rect;
+
+use constant _EFFECT_PACKS_BY_NAME => {
+    glow => 'Graphics::GVG::AST::Glow',
+};
 
 my $DSL = <<'END_DSL';
     :discard ~ Whitespace
@@ -42,7 +48,18 @@ my $DSL = <<'END_DSL';
     :default ::= action => _do_first_arg
 
 
-    Functions ::= Function+ action => _do_build_ast_obj
+    Start ::= Block+ action => _do_build_ast_obj
+
+    Block ::= Functions | EffectBlocks
+
+    EffectBlocks ::= EffectBlock+ action => _do_arg_list_ref
+
+    EffectBlock ::= EffectName OpenCurly Block CloseCurly
+        action => _do_effect_block
+
+    EffectName ~ 'glow'
+
+    Functions ::= Function+ action => _do_arg_list_ref
 
     Function ::= LineFunc SemiColon
         | CircleFunc SemiColon
@@ -83,6 +100,10 @@ my $DSL = <<'END_DSL';
     OpenParen ~ '('
 
     CloseParen ~ ')'
+
+    OpenCurly ~ '{'
+
+    CloseCurly ~ '}'
 
     SemiColon ~ ';'
 
@@ -154,6 +175,18 @@ sub _do_rect_func
     return $cmd;
 }
 
+sub _do_effect_block
+{
+    # EffectName OpenCurly Start CloseCurly
+    my ($self, $name, undef, $cmds) = @_;
+    my $effect_pack = $self->_EFFECT_PACKS_BY_NAME->{$name};
+
+    my $effect = $effect_pack->new;
+    $effect->push_command( $_ ) for @$cmds;
+
+    return $effect;
+}
+
 sub _do_first_arg
 {
     my ($self, $arg) = @_;
@@ -162,11 +195,23 @@ sub _do_first_arg
 
 sub _do_build_ast_obj
 {
-    my ($self, @ast_list) = @_;
+    my ($self, $ast_list) = @_;
     my $ast = Graphics::GVG::AST->new({
-        commands => \@ast_list,
+        commands => $ast_list,
     });
     return $ast;
+}
+
+sub _do_arg_list
+{
+    my ($self, @args) = @_;
+    return @args;
+}
+
+sub _do_arg_list_ref
+{
+    my ($self, @args) = @_;
+    return \@args;
 }
 
 
@@ -180,6 +225,7 @@ sub _color_hex_to_int
     my $int = hex $color;
     return $int;
 }
+
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

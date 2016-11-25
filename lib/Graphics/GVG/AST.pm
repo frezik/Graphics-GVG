@@ -27,13 +27,13 @@ use strict;
 use warnings;
 use Moose;
 use namespace::autoclean;
-use Graphics::GVG::AST::Command;
+use Graphics::GVG::AST::Node;
 
 
 has 'commands' => (
     traits => ['Array'],
     is => 'ro',
-    isa => 'ArrayRef[Graphics::GVG::AST::Command]',
+    isa => 'ArrayRef[Graphics::GVG::AST::Node]',
     default => sub { [] },
     handles => {
         push_command => 'push',
