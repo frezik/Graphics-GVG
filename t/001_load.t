@@ -35,4 +35,6 @@ use_ok( 'Graphics::GVG::AST::Line' );
 use_ok( 'Graphics::GVG::AST::Rect' );
 use_ok( 'Graphics::GVG' );
 
-use_ok( 'Graphics::GVG::OpenGLRenderer' );
+if(! eval "use OpenGL; use SDL; use_ok( 'Graphics::GVG::OpenGLRenderer' ); 1;" ) {
+    pass( "OpenGL and/or SDL is not installed" );
+}
