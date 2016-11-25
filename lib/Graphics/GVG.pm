@@ -32,6 +32,7 @@ use namespace::autoclean;
 use Marpa::R2;
 use Graphics::GVG::AST::Command;
 use Graphics::GVG::AST;
+use Graphics::GVG::AST::Circle;
 use Graphics::GVG::AST::Line;
 
 my $DSL = <<'END_DSL';
@@ -43,11 +44,17 @@ my $DSL = <<'END_DSL';
     Functions ::= Function+ action => _do_build_ast_obj
 
     Function ::= LineFunc SemiColon
+        | CircleFunc SemiColon
 
     LineFunc ::= 
         'line' OpenParen
             Color Comma Number Comma Number Comma Number Comma Number
             CloseParen action => _do_line_func
+
+    CircleFunc ::=
+        'circle' OpenParen
+            Color Comma Number Comma Number Comma Number
+            CloseParen action => _do_circle_func
 
     Number ~ Digits
         | Digits Dot Digits
@@ -108,6 +115,20 @@ sub _do_line_func
         color => $color,
     });
     return $line;
+}
+
+sub _do_circle_func
+{
+    # 'circle' OpenParen Color Comma Number Comma Number Comma Number
+    my ($self, undef, undef, $color, undef, $cx, undef, $cy, undef, $r) = @_;
+    $color = $self->_color_hex_to_int( $color );
+    my $circle = Graphics::GVG::AST::Circle->new({
+        cx => $cx,
+        cy => $cy,
+        r => $r,
+        color => $color,
+    });
+    return $circle;
 }
 
 sub _do_first_arg

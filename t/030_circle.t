@@ -21,12 +21,31 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 5;
+use Test::More tests => 3;
 use strict;
-use warnings;
+use Graphics::GVG;
+use Graphics::GVG::AST;
+use Graphics::GVG::AST::Circle;
 
-use_ok( 'Graphics::GVG::AST::Command' );
-use_ok( 'Graphics::GVG::AST' );
-use_ok( 'Graphics::GVG::AST::Circle' );
-use_ok( 'Graphics::GVG::AST::Line' );
-use_ok( 'Graphics::GVG' );
+my $LINES = <<'END';
+    circle( #ff33ff00, 0, 0, 5 );
+END
+
+
+my $gvg = Graphics::GVG->new;
+isa_ok( $gvg, 'Graphics::GVG' );
+
+my $ast = $gvg->parse( $LINES );
+isa_ok( $ast, 'Graphics::GVG::AST' );
+
+
+my $expect_ast = Graphics::GVG::AST->new;
+my $circle_ast = Graphics::GVG::AST::Circle->new({
+    cx => 0,
+    cy => 0,
+    r => 5,
+    color => 0xff33ff00,
+});
+$expect_ast->push_command( $circle_ast );
+
+is_deeply( $ast, $expect_ast );
