@@ -34,6 +34,7 @@ use Graphics::GVG::AST::Command;
 use Graphics::GVG::AST;
 use Graphics::GVG::AST::Circle;
 use Graphics::GVG::AST::Line;
+use Graphics::GVG::AST::Rect;
 
 my $DSL = <<'END_DSL';
     :discard ~ Whitespace
@@ -45,6 +46,7 @@ my $DSL = <<'END_DSL';
 
     Function ::= LineFunc SemiColon
         | CircleFunc SemiColon
+        | RectFunc SemiColon
 
     LineFunc ::= 
         'line' OpenParen
@@ -55,6 +57,11 @@ my $DSL = <<'END_DSL';
         'circle' OpenParen
             Color Comma Number Comma Number Comma Number
             CloseParen action => _do_circle_func
+
+    RectFunc ::= 
+        'rect' OpenParen
+            Color Comma Number Comma Number Comma Number Comma Number
+            CloseParen action => _do_rect_func
 
     Number ~ Digits
         | Digits Dot Digits
@@ -129,6 +136,22 @@ sub _do_circle_func
         color => $color,
     });
     return $circle;
+}
+
+sub _do_rect_func
+{
+    # 'rect' OpenParen Color Comma Number Comma Number Comma Number Comma Number
+    my ($self, undef, undef, $color, undef, $x, undef, $y, undef,
+        $width, undef, $height) = @_;
+    $color = $self->_color_hex_to_int( $color );
+    my $cmd = Graphics::GVG::AST::Rect->new({
+        x => $x,
+        y => $y,
+        width => $width,
+        height => $height,
+        color => $color,
+    });
+    return $cmd;
 }
 
 sub _do_first_arg

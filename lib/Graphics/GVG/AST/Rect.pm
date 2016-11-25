@@ -21,13 +21,31 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 6;
+package Graphics::GVG::AST::Rect;
+
 use strict;
 use warnings;
+use Moose;
+use namespace::autoclean;
+use Graphics::GVG::AST::Command;
 
-use_ok( 'Graphics::GVG::AST::Command' );
-use_ok( 'Graphics::GVG::AST' );
-use_ok( 'Graphics::GVG::AST::Circle' );
-use_ok( 'Graphics::GVG::AST::Line' );
-use_ok( 'Graphics::GVG::AST::Rect' );
-use_ok( 'Graphics::GVG' );
+with 'Graphics::GVG::AST::Command';
+
+
+has [qw{ x y width height }] => (
+    is => 'ro',
+    isa => 'Num',
+    default => 0.0,
+);
+has color => (
+    is => 'ro',
+    isa => 'Int',
+    default => 0,
+);
+
+
+no Moose;
+__PACKAGE__->meta->make_immutable;
+1;
+__END__
+
