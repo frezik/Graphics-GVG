@@ -28,7 +28,18 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use Data::UUID;
+use Imager::Color;
 
+has '_glow_count' => (
+    traits => ['Counter'],
+    is => 'ro',
+    isa => 'Int',
+    default => 0,
+    handles => {
+        '_increment_glow' => 'inc',
+        '_decrement_glow' => 'dec',
+    },
+);
 
 sub make_drawer_obj
 {
@@ -89,6 +100,11 @@ sub _make_draw_code
         elsif( $_->isa( 'Graphics::GVG::AST::Line' ) ) {
             $ret = $self->_make_code_line( $_ );
         }
+        elsif( $_->isa( 'Graphics::GVG::AST::Glow' ) ) {
+            $self->_increment_glow;
+            $ret = $self->_make_draw_code( $_ );
+            $self->_decrement_glow;
+        }
         else {
             warn "Don't know what to do with " . ref($_) . "\n";
         }
@@ -108,14 +124,33 @@ sub _make_code_line
     my $color = $cmd->color;
     my ($red, $green, $blue, $alpha) = $self->_int_to_opengl_color( $color );
 
-    my $code = qq!
-        glLineWidth( 1.0 );
-        glColor4ub( $red, $green, $blue, $alpha );
-        glBegin( GL_LINES );
-            glVertex2f( $x1, $y1 );
-            glVertex2f( $x2, $y2 );
-        glEnd();
-    !;
+    my $make_line_sub = sub {
+        my ($width, $red, $green, $blue, $alpha) = @_;
+        my $code = qq!
+            glLineWidth( $width );
+            glColor4ub( $red, $green, $blue, $alpha );
+            glBegin( GL_LINES );
+                glVertex2f( $x1, $y1 );
+                glVertex2f( $x2, $y2 );
+            glEnd();
+        !;
+        return $code;
+    };
+
+    my $code = '';
+    if( $self->_glow_count > 0 ) {
+        # TODO not really getting the effect I was hoping for. Play around 
+        # with it later.
+        my @colors1 = $self->_brighten( 1.3, $red, $green, $blue, $alpha );
+        my @colors2 = $self->_brighten( 0.6, $red, $green, $blue, $alpha );
+        my @colors3 = $self->_brighten( 0.1, $red, $green, $blue, $alpha );
+        $code = $make_line_sub->( 3.0, @colors3 );
+        $code .= $make_line_sub->( 2.0, @colors2 );
+        $code .= $make_line_sub->( 0.5, @colors1 );
+    }
+    else {
+        $code = $make_line_sub->( 1.0, $red, $green, $blue, $alpha );
+    }
 
     return $code;
 }
@@ -128,6 +163,24 @@ sub _int_to_opengl_color
     my $blue = ($color >> 8) & 0xFF;
     my $alpha = $color & 0xFF;
     return ($red, $green, $blue, $alpha);
+}
+
+sub _brighten
+{
+    my ($self, $multiplier, $red, $green, $blue, $alpha) = @_;
+    my $color = Imager::Color->new( $red, $green, $blue, $alpha );
+    my ($h, $s, $v, $new_alpha) = $color->hsv;
+
+    $v *= $multiplier;
+    $v = 1.0 if $v > 1.0;
+
+    my $hsv_color = Imager::Color->new(
+        hue => $h,
+        v => $v,
+        s => $v,
+        alpha => $new_alpha,
+    );
+    return $hsv_color->rgba;
 }
 
 

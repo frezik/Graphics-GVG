@@ -1,3 +1,6 @@
-line( #ff33ffff, 0, 0, 1, 1 );
-line( #ff33ffff, 1, 1, 1, -1 );
-line( #ff33ffff, 1, -1, 0, 0 );
+%color = #993399ff;
+line( %color, 0, 0, 1, 1 );
+glow {
+    line( %color, 1, 1, 1, -1 );
+    line( %color, 1, -1, 0, 0 );
+}
