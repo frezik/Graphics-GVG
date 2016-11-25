@@ -50,7 +50,7 @@ my $DSL = <<'END_DSL';
 
     Start ::= Block+ action => _do_build_ast_obj
 
-    Block ::= Functions | EffectBlocks
+    Block ::= Functions | EffectBlocks | ColorVariableSet | NumberVariableSet
 
     EffectBlocks ::= EffectBlock+ action => _do_arg_list_ref
 
@@ -67,18 +67,32 @@ my $DSL = <<'END_DSL';
 
     LineFunc ::= 
         'line' OpenParen
-            Color Comma Number Comma Number Comma Number Comma Number
+            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma NumberValue
             CloseParen action => _do_line_func
 
     CircleFunc ::=
         'circle' OpenParen
-            Color Comma Number Comma Number Comma Number
+            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue
             CloseParen action => _do_circle_func
 
     RectFunc ::= 
         'rect' OpenParen
-            Color Comma Number Comma Number Comma Number Comma Number
+            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma NumberValue
             CloseParen action => _do_rect_func
+
+    NumberVariableSet ::= '$' VarName '=' Number SemiColon
+        action => _set_num_var
+
+    ColorVariableSet ::= '%' VarName '=' Color SemiColon
+        action => _set_color_var
+
+    NumberValue ::= Number | NumberLookup
+
+    ColorValue ::= Color | ColorLookup
+
+    NumberLookup ::= '$' VarName action => _do_num_lookup
+
+    ColorLookup ::= '%' VarName action => _do_color_lookup
 
     Number ~ Digits
         | Digits Dot Digits
@@ -107,6 +121,8 @@ my $DSL = <<'END_DSL';
 
     SemiColon ~ ';'
 
+    VarName ~ [\w]+
+
     Whitespace ~ [\s]+
 END_DSL
 my $GRAMMAR = Marpa::R2::Scanless::G->new({
@@ -115,6 +131,17 @@ my $GRAMMAR = Marpa::R2::Scanless::G->new({
 my $RECCE = Marpa::R2::Scanless::R->new({
     grammar => $GRAMMAR,
 });
+
+has '_num_vars' => (
+    is => 'ro',
+    isa => 'HashRef[Num]',
+    default => sub {{}},
+);
+has '_color_vars' => (
+    is => 'ro',
+    isa => 'HashRef[Int]',
+    default => sub {{}},
+);
 
 
 sub parse
@@ -195,9 +222,17 @@ sub _do_first_arg
 
 sub _do_build_ast_obj
 {
-    my ($self, $ast_list) = @_;
+    my ($self, @ast_list) = @_;
+
+    # Filter and normalize list
+    @ast_list = map {
+        defined $_
+            ? (ref $_ eq 'ARRAY' ? @$_ : $_)
+            : ();
+    } @ast_list;
+
     my $ast = Graphics::GVG::AST->new({
-        commands => $ast_list,
+        commands => \@ast_list,
     });
     return $ast;
 }
@@ -212,6 +247,44 @@ sub _do_arg_list_ref
 {
     my ($self, @args) = @_;
     return \@args;
+}
+
+sub _set_num_var
+{
+    # '$' name '=' Number SemiColon
+    my ($self, undef, $name, undef, $value) = @_;
+    $self->_num_vars->{$name} = $value;
+    return undef;
+}
+
+sub _set_color_var
+{
+    # '%' name '=' Color SemiColon
+    my ($self, undef, $name, undef, $value) = @_;
+    $self->_color_vars->{$name} = $value;
+    return undef;
+}
+
+sub _do_num_lookup
+{
+    # '$' name
+    my ($self, undef, $name) = @_;
+    if(! exists $self->_num_vars->{$name} ) {
+        # TODO line/column number in error
+        die "Could not find numeric var named '\%$name'\n";
+    }
+    return $self->_num_vars->{$name};
+}
+
+sub _do_color_lookup
+{
+    # '%' name
+    my ($self, undef, $name) = @_;
+    if(! exists $self->_color_vars->{$name} ) {
+        # TODO line/column number in error
+        die "Could not find color var named '\%$name'\n";
+    }
+    return $self->_color_vars->{$name};
 }
 
 
