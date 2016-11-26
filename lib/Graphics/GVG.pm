@@ -34,6 +34,7 @@ use Graphics::GVG::AST::Command;
 use Graphics::GVG::AST::Effect;
 use Graphics::GVG::AST;
 use Graphics::GVG::AST::Circle;
+use Graphics::GVG::AST::Ellipse;
 use Graphics::GVG::AST::Glow;
 use Graphics::GVG::AST::Line;
 use Graphics::GVG::AST::Rect;
@@ -63,6 +64,7 @@ my $DSL = <<'END_DSL';
 
     Function ::= LineFunc SemiColon
         | CircleFunc SemiColon
+        | EllipseFunc SemiColon
         | RectFunc SemiColon
 
     LineFunc ::= 
@@ -74,6 +76,11 @@ my $DSL = <<'END_DSL';
         'circle' OpenParen
             ColorValue Comma NumberValue Comma NumberValue Comma NumberValue
             CloseParen action => _do_circle_func
+
+    EllipseFunc ::=
+        'ellipse' OpenParen
+            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue
+            Comma NumberValue CloseParen action => _do_ellipse_func
 
     RectFunc ::= 
         'rect' OpenParen
@@ -184,6 +191,21 @@ sub _do_circle_func
         color => $color,
     });
     return $circle;
+}
+
+sub _do_ellipse_func
+{
+    # 'ellipse' OpenParen ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma NumberValue
+    my ($self, undef, undef, $color, undef, $cx, undef, $cy, undef, $rx, undef, $ry) = @_;
+    $color = $self->_color_hex_to_int( $color );
+    my $ellipse = Graphics::GVG::AST::Ellipse->new({
+        cx => $cx,
+        cy => $cy,
+        rx => $rx,
+        ry => $ry,
+        color => $color,
+    });
+    return $ellipse;
 }
 
 sub _do_rect_func
