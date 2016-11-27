@@ -46,6 +46,7 @@ use constant _EFFECT_PACKS_BY_NAME => {
 
 my $DSL = <<'END_DSL';
     :discard ~ Whitespace
+    :discard ~ Comment
 
     :default ::= action => _do_first_arg
 
@@ -148,6 +149,12 @@ my $DSL = <<'END_DSL';
     VarName ~ [\w]+
 
     Whitespace ~ [\s]+
+
+    Comment ~ '//' CommentChars VertSpaceChar
+
+    CommentChars ~ [^\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]*
+
+    VertSpaceChar ~ [\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]
 END_DSL
 my $GRAMMAR = Marpa::R2::Scanless::G->new({
     source => \$DSL,

@@ -1,7 +1,5 @@
 * Arc
 * Bezier curve
-* Regular polygons
-* Comments
 * SVG renderer
 * OpenGL renderer
     * Supports all commands
