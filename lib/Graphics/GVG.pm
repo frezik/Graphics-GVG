@@ -37,6 +37,7 @@ use Graphics::GVG::AST::Circle;
 use Graphics::GVG::AST::Ellipse;
 use Graphics::GVG::AST::Glow;
 use Graphics::GVG::AST::Line;
+use Graphics::GVG::AST::Polygon;
 use Graphics::GVG::AST::Rect;
 
 use constant _EFFECT_PACKS_BY_NAME => {
@@ -52,6 +53,7 @@ my $DSL = <<'END_DSL';
     Start ::= Block+ action => _do_build_ast_obj
 
     Block ::= Functions | EffectBlocks | ColorVariableSet | NumberVariableSet
+        | IntegerVariableSet
 
     EffectBlocks ::= EffectBlock+ action => _do_arg_list_ref
 
@@ -66,6 +68,7 @@ my $DSL = <<'END_DSL';
         | CircleFunc SemiColon
         | EllipseFunc SemiColon
         | RectFunc SemiColon
+        | PolyFunc SemiColon
 
     LineFunc ::= 
         'line' OpenParen
@@ -87,24 +90,38 @@ my $DSL = <<'END_DSL';
             ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma NumberValue
             CloseParen action => _do_rect_func
 
+    PolyFunc ::= 
+        'poly' OpenParen
+            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma IntegerValue Comma NumberValue
+            CloseParen action => _do_poly_func
+
     NumberVariableSet ::= '$' VarName '=' Number SemiColon
         action => _set_num_var
 
     ColorVariableSet ::= '%' VarName '=' Color SemiColon
         action => _set_color_var
 
+    IntegerVariableSet ::= '&' VarName '=' Integer SemiColon
+        action => _set_int_var
+
     NumberValue ::= Number | NumberLookup
 
     ColorValue ::= Color | ColorLookup
+
+    IntegerValue ::= Integer | IntegerLookup
 
     NumberLookup ::= '$' VarName action => _do_num_lookup
 
     ColorLookup ::= '%' VarName action => _do_color_lookup
 
+    IntegerLookup ::= '&' VarName action => _do_int_lookup
+
     Number ~ Digits
         | Digits Dot Digits
         | Negative Digits
         | Negative Digits Dot Digits
+
+    Integer ~ Digits
 
     Negative ~ '-'
 
@@ -145,6 +162,11 @@ has '_num_vars' => (
     default => sub {{}},
 );
 has '_color_vars' => (
+    is => 'ro',
+    isa => 'HashRef[Int]',
+    default => sub {{}},
+);
+has '_int_vars' => (
     is => 'ro',
     isa => 'HashRef[Int]',
     default => sub {{}},
@@ -224,6 +246,23 @@ sub _do_rect_func
     return $cmd;
 }
 
+sub _do_poly_func
+{
+    # 'poly' OpenParen ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma IntegerValue Comma NumberValue
+    my ($self, undef, undef, $color, undef, $cx, undef, $cy, undef,
+        $radius, undef, $sides, undef, $rotate) = @_;
+    $color = $self->_color_hex_to_int( $color );
+    my $cmd = Graphics::GVG::AST::Polygon->new({
+        cx => $cx,
+        cy => $cy,
+        r => $radius,
+        sides => $sides,
+        rotate => $rotate,
+        color => $color,
+    });
+    return $cmd;
+}
+
 sub _do_effect_block
 {
     # EffectName OpenCurly Start CloseCurly
@@ -287,6 +326,14 @@ sub _set_color_var
     return undef;
 }
 
+sub _set_int_var
+{
+    # '&' name '=' Integer SemiColon
+    my ($self, undef, $name, undef, $value) = @_;
+    $self->_int_vars->{$name} = $value;
+    return undef;
+}
+
 sub _do_num_lookup
 {
     # '$' name
@@ -307,6 +354,17 @@ sub _do_color_lookup
         die "Could not find color var named '\%$name'\n";
     }
     return $self->_color_vars->{$name};
+}
+
+sub _do_int_lookup
+{
+    # '&' name
+    my ($self, undef, $name) = @_;
+    if(! exists $self->_int_vars->{$name} ) {
+        # TODO line/column number in error
+        die "Could not find int var named '\&$name'\n";
+    }
+    return $self->_int_vars->{$name};
 }
 
 

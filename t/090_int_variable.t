@@ -21,28 +21,34 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 12;
+use Test::More tests => 3;
 use strict;
-use warnings;
+use Graphics::GVG;
+use Graphics::GVG::AST;
+use Graphics::GVG::AST::Polygon;
 
-use_ok( 'Graphics::GVG::AST::Node' );
-use_ok( 'Graphics::GVG::AST::Command' );
-use_ok( 'Graphics::GVG::AST::Effect' );
-use_ok( 'Graphics::GVG::AST' );
-use_ok( 'Graphics::GVG::AST::Circle' );
-use_ok( 'Graphics::GVG::AST::Ellipse' );
-use_ok( 'Graphics::GVG::AST::Glow' );
-use_ok( 'Graphics::GVG::AST::Line' );
-use_ok( 'Graphics::GVG::AST::Polygon' );
-use_ok( 'Graphics::GVG::AST::Rect' );
-use_ok( 'Graphics::GVG' );
+my $LINES = <<'END';
+    &x = 6;
+    poly( #ff33ff00, 0, 0, 4.3, &x, 30.2 );
+END
 
-if(! eval "
-    use OpenGL;
-    use SDL;
-    use Imager::Color;
-    use_ok( 'Graphics::GVG::OpenGLRenderer' );
-    1;
-" ) {
-    pass( "OpenGL, Imager, and/or SDL is not installed" );
-}
+
+my $gvg = Graphics::GVG->new;
+isa_ok( $gvg, 'Graphics::GVG' );
+
+my $ast = $gvg->parse( $LINES );
+isa_ok( $ast, 'Graphics::GVG::AST' );
+
+
+my $expect_ast = Graphics::GVG::AST->new;
+my $poly_ast = Graphics::GVG::AST::Polygon->new({
+    cx => 0,
+    cy => 0,
+    r => 4.3,
+    sides => 6,
+    rotate => 30.2,
+    color => 0xff33ff00,
+});
+$expect_ast->push_command( $poly_ast );
+
+is_deeply( $ast, $expect_ast );

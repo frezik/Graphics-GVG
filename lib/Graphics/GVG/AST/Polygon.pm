@@ -21,28 +21,70 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 12;
+package Graphics::GVG::AST::Polygon;
+
 use strict;
 use warnings;
+use Moose;
+use namespace::autoclean;
+use Graphics::GVG::AST::Command;
+use Math::Trig qw{ deg2rad pi };
 
-use_ok( 'Graphics::GVG::AST::Node' );
-use_ok( 'Graphics::GVG::AST::Command' );
-use_ok( 'Graphics::GVG::AST::Effect' );
-use_ok( 'Graphics::GVG::AST' );
-use_ok( 'Graphics::GVG::AST::Circle' );
-use_ok( 'Graphics::GVG::AST::Ellipse' );
-use_ok( 'Graphics::GVG::AST::Glow' );
-use_ok( 'Graphics::GVG::AST::Line' );
-use_ok( 'Graphics::GVG::AST::Polygon' );
-use_ok( 'Graphics::GVG::AST::Rect' );
-use_ok( 'Graphics::GVG' );
+with 'Graphics::GVG::AST::Command';
 
-if(! eval "
-    use OpenGL;
-    use SDL;
-    use Imager::Color;
-    use_ok( 'Graphics::GVG::OpenGLRenderer' );
-    1;
-" ) {
-    pass( "OpenGL, Imager, and/or SDL is not installed" );
+has [qw{ cx cy r rotate }] => (
+    is => 'ro',
+    isa => 'Num',
+    default => 0.0,
+);
+has sides => (
+    is => 'ro',
+    isa => 'Int',
+    default => 3,
+);
+has color => (
+    is => 'ro',
+    isa => 'Int',
+    default => 0,
+);
+has coords => (
+    is => 'ro',
+    isa => 'ArrayRef[ArrayRef[Num]]',
+);
+
+
+sub BUILDARGS
+{
+    my ($class, $args) = @_;
+    my $radius = $args->{r};
+    my $sides = $args->{sides};
+    my $rotate = $args->{rotate};
+
+    $args->{coords} = [
+        map {[
+            $class->_calc_x_coord( $_, $sides, $radius, $rotate ),
+            $class->_calc_y_coord( $_, $sides, $radius, $rotate ),
+        ]} (1 .. $sides)
+    ];
+    return $args;
 }
+
+
+sub _calc_x_coord
+{
+    my ($class, $side, $total_sides, $radius, $rotate) = @_;
+    return $radius * cos( 2 * pi * $side / $total_sides + deg2rad($rotate) );
+}
+
+sub _calc_y_coord
+{
+    my ($class, $side, $total_sides, $radius, $rotate) = @_;
+    return $radius * sin( 2 * pi * $side / $total_sides + deg2rad($rotate) );
+}
+
+
+no Moose;
+__PACKAGE__->meta->make_immutable;
+1;
+__END__
+
