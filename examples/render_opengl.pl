@@ -23,8 +23,10 @@ my $GVG_OPENGL = undef;
 my $GVG_FILE = '';
 my $ROTATE = 0;
 my $DO_DUMP = 0;
+my $SCALE = 1.0;
 GetOptions(
     'rotate=i' => \$ROTATE,
+    'scale=f' => \$SCALE,
     'input=s' => \$GVG_FILE,
     'dump' => \$DO_DUMP,
 );
@@ -93,7 +95,6 @@ sub make_ast
     my $ast = $gvg_parser->parse( $gvg_script );
 
     return $ast;
-
 }
 
 sub make_drawer
@@ -140,6 +141,7 @@ sub on_show
 
     glPushMatrix();
         glRotatef( $ROTATE, 0.0, 0.0, 1.0 );
+        glScalef( $SCALE, $SCALE, $SCALE );
         $GVG_OPENGL->draw;
     glPopMatrix();
 
