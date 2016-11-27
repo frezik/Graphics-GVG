@@ -22,9 +22,11 @@ my $GVG_OPENGL = undef;
 
 my $GVG_FILE = '';
 my $ROTATE = 0;
+my $DO_DUMP = 0;
 GetOptions(
     'rotate=i' => \$ROTATE,
     'input=s' => \$GVG_FILE,
+    'dump' => \$DO_DUMP,
 );
 die "Need GVG file to show\n" unless $GVG_FILE;
 
@@ -77,7 +79,7 @@ sub make_app
     return $app;
 }
 
-sub make_gvg
+sub make_ast
 {
     my ($gvg_file) = @_;
     my $gvg_script = '';
@@ -90,10 +92,28 @@ sub make_gvg
     my $gvg_parser = Graphics::GVG->new;
     my $ast = $gvg_parser->parse( $gvg_script );
 
+    return $ast;
+
+}
+
+sub make_drawer
+{
+    my ($ast) = @_;
+
     my $renderer = Graphics::GVG::OpenGLRenderer->new;
     my $drawer = $renderer->make_drawer_obj( $ast );
 
     return $drawer;
+}
+
+sub make_code
+{
+    my ($ast) = @_;
+
+    my $renderer = Graphics::GVG::OpenGLRenderer->new;
+    my ($code) = $renderer->make_code( $ast );
+
+    return $code;
 }
 
 sub on_move
@@ -129,7 +149,15 @@ sub on_show
 
 
 {
-    my $app = make_app();
-    $GVG_OPENGL = make_gvg( $GVG_FILE );
-    $app->run();
+    my $ast = make_ast( $GVG_FILE );
+
+    if( $DO_DUMP ) {
+        my $code = make_code( $ast );
+        print $code;
+    }
+    else {
+        $GVG_OPENGL = make_drawer( $ast );
+        my $app = make_app();
+        $app->run();
+    }
 }

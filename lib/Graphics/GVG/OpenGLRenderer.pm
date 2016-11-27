@@ -45,12 +45,19 @@ sub make_drawer_obj
 {
     my ($self, $ast) = @_;
 
-    my $drawer_pack = $self->_make_pack;
-    my $code = $self->_make_pack_code( $drawer_pack, $ast );
+    my ($code, $drawer_pack) = $self->make_code( $ast );
     eval $code or die $@;
 
     my $obj = $drawer_pack->new;
     return $obj;
+}
+
+sub make_code
+{
+    my ($self, $ast) = @_;
+    my $drawer_pack = $self->_make_pack;
+    my $code = $self->_make_pack_code( $drawer_pack, $ast );
+    return ($code, $drawer_pack);
 }
 
 sub _make_pack
