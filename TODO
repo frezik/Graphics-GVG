@@ -1,7 +1,10 @@
 Version 0.1
 ===========
 * OpenGL renderer
-    * Supports all commands
+    * Circle
+    * Rect
+    * Ellipse
+    * Regular polygon
 * Documentation
 
 

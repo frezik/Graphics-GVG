@@ -107,6 +107,9 @@ sub _make_draw_code
         elsif( $_->isa( 'Graphics::GVG::AST::Line' ) ) {
             $ret = $self->_make_code_line( $_ );
         }
+        elsif( $_->isa( 'Graphics::GVG::AST::Rect' ) ) {
+            $ret = $self->_make_code_rect( $_ );
+        }
         elsif( $_->isa( 'Graphics::GVG::AST::Glow' ) ) {
             $self->_increment_glow;
             $ret = $self->_make_draw_code( $_ );
@@ -157,6 +160,50 @@ sub _make_code_line
     }
     else {
         $code = $make_line_sub->( 1.0, $red, $green, $blue, $alpha );
+    }
+
+    return $code;
+}
+
+sub _make_code_rect
+{
+    my ($self, $cmd) = @_;
+    my $x = $cmd->x;
+    my $y = $cmd->y;
+    my $width = $cmd->width;
+    my $height = $cmd->height;
+    my $color = $cmd->color;
+    my ($red, $green, $blue, $alpha) = $self->_int_to_opengl_color( $color );
+
+    my $make_rect_sub = sub {
+        my ($width, $red, $green, $blue, $alpha) = @_;
+        my $code = qq!
+            glLineWidth( $width );
+            glColor4ub( $red, $green, $blue, $alpha );
+            glBegin( GL_LINES );
+                glVertex2f( $x, $y );
+                glVertex2f( $x + $width, $y );
+
+                glVertex2f( $x + $width, $y );
+                glVertex2f( $x + $width, $y + $height );
+
+                glVertex2f( $x + $width, $y + $height );
+                glVertex2f( $x, $y + $height );
+
+                glVertex2f( $x, $y + $height );
+                glVertex2f( $x, $y );
+            glEnd();
+        !;
+        return $code;
+    };
+
+    my $code = '';
+    if( $self->_glow_count > 0 ) {
+        # TODO
+        $code = $make_rect_sub->( 1.0, $red, $green, $blue, $alpha );
+    }
+    else {
+        $code = $make_rect_sub->( 1.0, $red, $green, $blue, $alpha );
     }
 
     return $code;
