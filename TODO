@@ -1,8 +1,5 @@
 Version 0.1
 ===========
-* OpenGL renderer
-    * Circle
-    * Ellipse
 * Documentation
 
 
@@ -10,7 +7,15 @@ Version 0.2
 ===========
 * Arc
 * Bezier curve
-* SVG renderer
+
+
+Version 0.3
+===========
+* Allow combining of multiple renderers in a single package
+* Split off OpenGL renderer into is own module
+    * Implement with vertex buffers
+* Chipmunk renderer (as its own module)
+* SVG renderer (as its own module)
 * Inkscape extension
     * Reading
     * Writing

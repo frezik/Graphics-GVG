@@ -29,8 +29,9 @@ use Moose;
 use namespace::autoclean;
 use Data::UUID;
 use Imager::Color;
+use Math::Trig 'pi';
 
-has 'circle_segments' => (
+has [qw{ circle_segments ellipse_segments }] => (
     is => 'rw',
     isa => 'Int',
     default => 40,
@@ -246,7 +247,59 @@ sub _make_code_circle
 
 sub _make_code_ellipse
 {
-    # TODO
+    my ($self, $cmd) = @_;
+    my $cx = $cmd->cx;
+    my $cy = $cmd->cy;
+    my $rx = $cmd->rx;
+    my $ry = $cmd->ry;
+    my $color = $cmd->color;
+    my $num_segments = $self->ellipse_segments;
+    my ($red, $green, $blue, $alpha) = $self->_int_to_opengl_color( $color );
+
+    # See:
+    # http://stackoverflow.com/questions/5886628/effecient-way-to-draw-ellipse-with-opengl-or-d3d
+    my $make_cmd_sub = sub {
+        my ($width, $red, $green, $blue, $alpha) = @_;
+        my $theta = 2 * pi / $num_segments;
+        my $c = cos( $theta );
+        my $s = sin( $theta );
+        my $t;
+
+        my $x = 1;
+        my $y = 0;
+
+        my $code = qq!
+            glLineWidth( $width );
+            glColor4ub( $red, $green, $blue, $alpha );
+            glBegin(GL_LINE_LOOP);
+        !;
+        foreach my $i (0 .. $num_segments) {
+            my $set_x = $x * $rx + $cx;
+            my $set_y = $y * $ry + $cy;
+            $code .= qq!
+                    glVertex2f( $set_x, $set_y );
+            !;
+
+            $t = $x;
+            $x = $c * $x - $s * $y;
+            $y = $s * $t + $c * $y;
+        }
+
+        $code .= q!
+            glEnd();
+        !;
+        return $code;
+    };
+
+    my $code = '';
+    if( $self->_glow_count > 0 ) {
+        # TODO
+        $code = $make_cmd_sub->( 1.0, $red, $green, $blue, $alpha );
+    }
+    else {
+        $code = $make_cmd_sub->( 1.0, $red, $green, $blue, $alpha );
+    }
+    return $code;
 }
 
 sub _make_code_poly
