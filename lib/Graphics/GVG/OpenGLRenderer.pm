@@ -30,6 +30,11 @@ use namespace::autoclean;
 use Data::UUID;
 use Imager::Color;
 
+has 'circle_segments' => (
+    is => 'rw',
+    isa => 'Int',
+    default => 40,
+);
 has '_glow_count' => (
     traits => ['Counter'],
     is => 'ro',
@@ -40,6 +45,7 @@ has '_glow_count' => (
         '_decrement_glow' => 'dec',
     },
 );
+
 
 sub make_drawer_obj
 {
@@ -220,7 +226,22 @@ sub _make_code_rect
 
 sub _make_code_circle
 {
-    # TODO
+    my ($self, $cmd) = @_;
+    my $cx = $cmd->cx;
+    my $cy = $cmd->cy;
+    my $r = $cmd->r;
+    my $color = $cmd->color;
+
+    my $poly = Graphics::GVG::AST::Polygon->new({
+        cx => $cx,
+        cy => $cy,
+        r => $r,
+        sides => $self->circle_segments,
+        rotate => 0,
+        color => $cmd->color,
+    });
+
+    return $self->_make_code_poly( $poly );
 }
 
 sub _make_code_ellipse
