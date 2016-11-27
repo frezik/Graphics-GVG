@@ -110,6 +110,15 @@ sub _make_draw_code
         elsif( $_->isa( 'Graphics::GVG::AST::Rect' ) ) {
             $ret = $self->_make_code_rect( $_ );
         }
+        elsif( $_->isa( 'Graphics::GVG::AST::Polygon' ) ) {
+            $ret = $self->_make_code_poly( $_ );
+        }
+        elsif( $_->isa( 'Graphics::GVG::AST::Circle' ) ) {
+            $ret = $self->_make_code_circle( $_ );
+        }
+        elsif( $_->isa( 'Graphics::GVG::AST::Ellipse' ) ) {
+            $ret = $self->_make_code_ellipse( $_ );
+        }
         elsif( $_->isa( 'Graphics::GVG::AST::Glow' ) ) {
             $self->_increment_glow;
             $ret = $self->_make_draw_code( $_ );
@@ -204,6 +213,62 @@ sub _make_code_rect
     }
     else {
         $code = $make_rect_sub->( 1.0, $red, $green, $blue, $alpha );
+    }
+
+    return $code;
+}
+
+sub _make_code_circle
+{
+    # TODO
+}
+
+sub _make_code_ellipse
+{
+    # TODO
+}
+
+sub _make_code_poly
+{
+    my ($self, $cmd) = @_;
+    my @coords = @{ $cmd->coords };
+    my $color = $cmd->color;
+    my ($red, $green, $blue, $alpha) = $self->_int_to_opengl_color( $color );
+
+    my $make_code_sub = sub {
+        my ($width, $red, $green, $blue, $alpha) = @_;
+        my $code = qq!
+            glLineWidth( $width );
+            glColor4ub( $red, $green, $blue, $alpha );
+            glBegin( GL_LINES );
+        !;
+
+        foreach my $i (0 .. $#coords - 1) {
+            my $x1 = $coords[$i][0];
+            my $y1 = $coords[$i][1];
+            my $x2 = $coords[$i+1][0];
+            my $y2 = $coords[$i+1][1];
+
+            $code .= qq!
+                glVertex2f( $x1, $y1 );
+                glVertex2f( $x2, $y2 );
+            !;
+        }
+        $code .= qq!
+                glVertex2f( $coords[-1][0], $coords[-1][1] );
+                glVertex2f( $coords[0][0], $coords[0][1] );
+            glEnd();
+        !;
+        return $code;
+    };
+
+    my $code = '';
+    if( $self->_glow_count > 0 ) {
+        # TODO
+        $code = $make_code_sub->( 1.0, $red, $green, $blue, $alpha );
+    }
+    else {
+        $code = $make_code_sub->( 1.0, $red, $green, $blue, $alpha );
     }
 
     return $code;

@@ -2,9 +2,7 @@ Version 0.1
 ===========
 * OpenGL renderer
     * Circle
-    * Rect
     * Ellipse
-    * Regular polygon
 * Documentation
 
 
