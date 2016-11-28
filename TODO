@@ -5,15 +5,17 @@ Version 0.1
 
 Version 0.2
 ===========
-* Arc
-* Bezier curve
+* Points
+* Rotate ellipses
+* Allow combining of multiple renderers in a single package
+* Split off OpenGL renderer into is own module
+    * Implement with vertex buffers
 
 
 Version 0.3
 ===========
-* Allow combining of multiple renderers in a single package
-* Split off OpenGL renderer into is own module
-    * Implement with vertex buffers
+* Arc
+* Bezier curve
 * Chipmunk renderer (as its own module)
 * SVG renderer (as its own module)
 * Inkscape extension
