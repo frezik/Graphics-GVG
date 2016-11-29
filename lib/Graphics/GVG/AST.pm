@@ -46,3 +46,151 @@ __PACKAGE__->meta->make_immutable;
 1;
 __END__
 
+
+=head1 NAME
+
+  Graphics::GVG::AST -- Abstract Syntax Tree for GVG scripts
+
+=head1 DESCRIPTION
+
+GVG scripts are compiled into an Abstract Syntax Tree (AST). Renderers will 
+walk the AST and generate the code they need to render the vectors.
+
+Everything is a Moose object.
+
+=head1 Graphics::GVG::AST
+
+This is the root object returned by C<<Graphics::GVG->parse()>>. It has one 
+attribute, C<commands>, which returns an arrayref of C<Graphics::GVG::AST::Node>
+objects. Each of these nodes correspond to a command or an effect.
+
+Note that variables are filled in statically. They don't appear in the 
+generated AST.
+
+=head1 COMMANDS
+
+These all do the role C<Graphics::GVG::AST::Command>, which in turn does the 
+C<Graphics::GVG::AST::Node> role.
+
+The attributes on each object correspond to their function description in the 
+language. See L<Graphics::GVG> for details.
+
+=head2 Circle
+
+Attributes:
+
+=over 4
+
+=item * cx -- Num
+
+=item * cy -- Num
+
+=item * r -- Num
+
+=item * color -- Int
+
+=back
+
+
+=head2 Ellipse
+
+Attributes:
+
+=over 4
+
+=item * cx -- Num
+
+=item * cy -- Num
+
+=item * rx -- Num
+
+=item * ry -- Num
+
+=item * color -- Int
+
+=back
+
+
+=head2 Line
+
+Attributes:
+
+=over 4
+
+=item * x1 -- Num
+
+=item * y1 -- Num
+
+=item * x2 -- Num
+
+=item * y2 -- Num
+
+=item * color -- Int
+
+=back
+
+
+=head2 Polygon
+
+Attributes:
+
+=over 4
+
+=item * cx -- Num
+
+=item * cy -- Num
+
+=item * r -- Num
+
+=item * rotate -- Num
+
+=item * sides -- Int
+
+=item * color -- Int
+
+=back
+
+There is also a special attribute, C<coords>, which returns an arrayref of 
+arrayrefs of coordinates (numbers). These are the list of x/y coords of the 
+calculated polygon.
+
+
+=head2 Rect
+
+Attributes:
+
+=over 4
+
+=item * x -- Num
+
+=item * y -- Num
+
+=item * width -- Num
+
+=item * height -- Num
+
+=item * color -- Int
+
+=back
+
+
+=head1 EFFECTS
+
+These all do the role C<Graphics::GVG::AST::Effect>, which in turn does the 
+C<Graphics::GVG::AST::Node> role.
+
+The C<Graphics::GVG::AST::Effect> role has the C<commands> attribute. 
+This returns an arrayref of C<Graphics::GVG::AST::Node> objects, which are 
+all the nodes under this effect. Note that effects can be nested:
+
+    glow {
+        glow {
+            line( #ff33ff00, 0.0, 0.0, 1.0, 1.1 );
+        }
+    }
+
+What this means is left to the renderer.
+
+=head2 Glow
+
+=cut

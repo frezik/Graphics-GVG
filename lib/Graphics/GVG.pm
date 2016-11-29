@@ -460,6 +460,9 @@ GVG functions can take several data types:
 
 Integers and floats can both use '-' to indicate a negative number.
 
+The type system is both static and strong; you can't assign an integer to a 
+color parameter.
+
 =head2 Variables
 
 Data types can be saved in variables, which each data type getting its own 
@@ -530,6 +533,13 @@ For example, a glow effect can be set on lines with:
 How this is rendered is dependent on the renderer.  An OpenGL renderer may 
 show an actual neon glow effect, while a renderer for a physics library 
 may ignore it entirely.
+
+=head1 ABSTRACT SYNTAX TREE
+
+The parse results in an Abstract Syntax Tree, which is represented with 
+Perl objects. Developers writing renderers will need to take the AST and 
+walk it to generate their desired output. See L<Graphics::GVG::AST> for a 
+description of the tree objects.
 
 =head1 METHODS
 
