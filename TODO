@@ -3,8 +3,6 @@ Version 0.2
 * Points
 * Rotate ellipses
 * Allow combining of multiple renderers in a single package
-* Split off OpenGL renderer into is own module
-    * Implement with vertex buffers
 
 
 Version 0.3

@@ -21,7 +21,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 12;
+use Test::More tests => 11;
 use strict;
 use warnings;
 
@@ -36,13 +36,3 @@ use_ok( 'Graphics::GVG::AST::Line' );
 use_ok( 'Graphics::GVG::AST::Polygon' );
 use_ok( 'Graphics::GVG::AST::Rect' );
 use_ok( 'Graphics::GVG' );
-
-if(! eval "
-    use OpenGL;
-    use SDL;
-    use Imager::Color;
-    use_ok( 'Graphics::GVG::OpenGLRenderer' );
-    1;
-" ) {
-    pass( "OpenGL, Imager, and/or SDL is not installed" );
-}
