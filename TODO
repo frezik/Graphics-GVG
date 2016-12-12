@@ -1,11 +1,10 @@
-Version 0.2
+Version 0.3
 ===========
 * Points
 * Rotate ellipses
-* Allow combining of multiple renderers in a single package
 
 
-Version 0.3
+Version 0.4
 ===========
 * Arc
 * Bezier curve

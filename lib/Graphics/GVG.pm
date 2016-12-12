@@ -416,8 +416,8 @@ __END__
 
 Parses scripts that describe vectors used for gaming graphics. The script is 
 parsed into an Abstract Syntax Tree (AST), which can then be transformed into 
-different forms. For example, the OpenGL renderer generates Perl code that 
-can be compiled and called inside a larger Perl/OpenGL program.
+different forms. For example, L<Graphics::GVG::OpenGLRender> generates Perl code
+that can be compiled and called inside a larger Perl/OpenGL program.
 
 =head1 LANGUAGE
 
