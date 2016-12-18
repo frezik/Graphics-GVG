@@ -69,6 +69,7 @@ my $DSL = <<'END_DSL';
         | CircleFunc SemiColon
         | EllipseFunc SemiColon
         | RectFunc SemiColon
+        | PointFunc SemiColon
         | PolyFunc SemiColon
 
     LineFunc ::= 
@@ -90,6 +91,11 @@ my $DSL = <<'END_DSL';
         'rect' OpenParen
             ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma NumberValue
             CloseParen action => _do_rect_func
+
+    PointFunc ::= 
+        'point' OpenParen
+            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue 
+            CloseParen action => _do_point_func
 
     PolyFunc ::= 
         'poly' OpenParen
@@ -251,6 +257,20 @@ sub _do_rect_func
         color => $color,
     });
     return $cmd;
+}
+
+sub _do_point_func
+{
+    # 'point' OpenParen ColorValue Comma NumberValue Comma NumberValue Comma NumberValue 
+    my ($self, undef, undef, $color, undef, $x, undef, $y, undef, $size) = @_;
+    $color = $self->_color_hex_to_int( $color );
+    my $line = Graphics::GVG::AST::Point->new({
+        x => $x,
+        y => $y,
+        size => $size,
+        color => $color,
+    });
+    return $line;
 }
 
 sub _do_poly_func
@@ -510,6 +530,12 @@ C<$x + $width> and C<$y + $height>.
 
 An ellipse of the given C<%color>, centered at C<$cx,$cy>, with respective radii
 C<$rx> and C<$ry>.
+
+=head3 point
+
+  point( %color, $x, $y, $size );
+
+A point of the given C<%color>, at C<$x,$y>, with size C<$size>.
 
 =head3 poly
 

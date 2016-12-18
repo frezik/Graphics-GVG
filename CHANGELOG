@@ -1,0 +1,9 @@
+Revision history for perl module Graphics::GVG
+
+0.2 2016-??-??
+
+- OpenGLRenderer spun off into its own module
+
+0.1 2016-??-??
+
+- Initial version
