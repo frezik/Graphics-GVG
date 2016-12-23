@@ -1,6 +1,6 @@
 Revision history for perl module Graphics::GVG
 
-0.3 2016-??-??
+0.3 2016-12-23
 
 - Fix polygon offset
 - Add point command
