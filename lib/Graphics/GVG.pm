@@ -55,7 +55,10 @@ my $DSL = <<'END_DSL';
 
     Blocks ::= Block+ action => _do_blocks
 
-    Block ::= Functions | EffectBlocks | ColorVariableSet | NumberVariableSet
+    Block ::= Functions
+        | EffectBlocks
+        | ColorVariableSet
+        | NumberVariableSet
         | IntegerVariableSet
 
     EffectBlocks ::= EffectBlock+ action => _do_arg_list_ref
@@ -125,6 +128,10 @@ my $DSL = <<'END_DSL';
 
     IntegerLookup ::= '&' VarName action => _do_int_lookup
 
+    # TODO
+    #Include ::= '^include<' FileName '>'
+    #    action => _do_include
+
     Number ~ Digits
         | Digits Dot Digits
         | Negative Digits
@@ -171,6 +178,11 @@ my $RECCE = Marpa::R2::Scanless::R->new({
     grammar => $GRAMMAR,
 });
 
+has 'include_paths' => (
+    is => 'ro',
+    isa => 'ArrayRef[Str]',
+    default => sub {[]},
+);
 has '_num_vars' => (
     is => 'ro',
     isa => 'HashRef[Num]',
@@ -404,6 +416,44 @@ sub _do_int_lookup
         die "Could not find int var named '\&$name'\n";
     }
     return $self->_int_vars->{$name};
+}
+
+sub _do_include
+{
+    # '^include<' IncludeFile '>'
+    my ($self, undef, $file) = @_;
+
+    my $full_path = undef;
+    foreach my $start_path (@{ $self->include_paths }) {
+        # TODO safer cross platform file concat
+        my $check_path = $start_path . '/' . $file;
+
+        if( -e $check_path ) {
+            $full_path = $check_path;
+            last;
+        }
+    }
+
+    if(! defined $full_path ) {
+        die "Could not find include file '$file' in directories: \n"
+            . join( "\n", map { "\t$_" } @{ $self->include_paths } ) . "\n";
+    }
+
+    my $input = '';
+    open( my $in, '<', $full_path ) or die "Can't open $full_path: $!\n";
+    while( my $line = <$in> ) {
+        $input .= $line;
+    }
+    close $in;
+
+    # TODO clone the current GVG, which will let variables fall through into 
+    # the include
+    my $gvg = Graphics::GVG->new({
+        include_paths => $self->include_paths,
+    });
+    my $ast = $gvg->parse( $input );
+
+    return @{ $ast->commands };
 }
 
 
