@@ -3,11 +3,10 @@ Revision history for perl module Graphics::GVG
 0.3 2016-??-??
 
 - Fix polygon offset
-
-0.2 2016-??-??
-
+- Add point command
+- Correct parsing of effect blocks
 - OpenGLRenderer spun off into its own module
 
-0.1 2016-??-??
+0.1 2016-11-28
 
 - Initial version

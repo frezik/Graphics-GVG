@@ -1,12 +1,8 @@
-Version 0.3
-===========
-* Rotate ellipses
-
-
 Version 0.4
 ===========
 * Include files
 * Arc
+* Rotate ellipses
 * Bezier curve
 * Chipmunk renderer (as its own module)
 * SVG renderer (as its own module)
