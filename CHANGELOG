@@ -1,5 +1,9 @@
 Revision history for perl module Graphics::GVG
 
+0.3 2016-??-??
+
+- Fix polygon offset
+
 0.2 2016-??-??
 
 - OpenGLRenderer spun off into its own module

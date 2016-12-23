@@ -21,74 +21,48 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-package Graphics::GVG::AST::Polygon;
-
+use Test::More tests => 4;
 use strict;
-use warnings;
-use Moose;
-use namespace::autoclean;
-use Graphics::GVG::AST::Command;
+use Graphics::GVG;
+use Graphics::GVG::AST;
+use Graphics::GVG::AST::Polygon;
 use Math::Trig qw{ deg2rad pi };
 
-with 'Graphics::GVG::AST::Command';
-
-has [qw{ cx cy r rotate }] => (
-    is => 'ro',
-    isa => 'Num',
-    default => 0.0,
-);
-has sides => (
-    is => 'ro',
-    isa => 'Int',
-    default => 3,
-);
-has color => (
-    is => 'ro',
-    isa => 'Int',
-    default => 0,
-);
-has coords => (
-    is => 'ro',
-    isa => 'ArrayRef[ArrayRef[Num]]',
-);
+my $LINES = <<'END';
+    poly( #ff33ff00, 0.5, 0.5, 4.3, 6, 30.2 );
+END
 
 
-sub BUILDARGS
-{
-    my ($class, $args) = @_;
-    my $radius = $args->{r};
-    my $sides = $args->{sides};
-    my $rotate = $args->{rotate};
-    my $cx = $args->{cx};
-    my $cy = $args->{cy};
+my $gvg = Graphics::GVG->new;
+isa_ok( $gvg, 'Graphics::GVG' );
 
-    $args->{coords} = [
-        map {[
-            $class->_calc_x_coord( $_, $sides, $radius, $rotate, $cx ),
-            $class->_calc_y_coord( $_, $sides, $radius, $rotate, $cy ),
-        ]} (1 .. $sides)
-    ];
-    return $args;
-}
+my $ast = $gvg->parse( $LINES );
+isa_ok( $ast, 'Graphics::GVG::AST' );
 
 
-sub _calc_x_coord
-{
-    my ($class, $side, $total_sides, $radius, $rotate, $cx) = @_;
-    return $cx
-        + $radius * cos( 2 * pi * $side / $total_sides + deg2rad($rotate) );
-}
+my $expect_ast = Graphics::GVG::AST->new;
+my $poly_ast = Graphics::GVG::AST::Polygon->new({
+    cx => 0.5,
+    cy => 0.5,
+    r => 4.3,
+    sides => 6,
+    rotate => 30.2,
+    color => 0xff33ff00,
+});
+$expect_ast->push_command( $poly_ast );
 
-sub _calc_y_coord
-{
-    my ($class, $side, $total_sides, $radius, $rotate, $cy) = @_;
-    return $cy
-        + $radius * sin( 2 * pi * $side / $total_sides + deg2rad($rotate) );
-}
+is_deeply( $ast, $expect_ast );
 
-
-no Moose;
-__PACKAGE__->meta->make_immutable;
-1;
-__END__
-
+# See:
+# http://stackoverflow.com/questions/7198144/how-to-draw-a-n-sided-regular-polygon-in-cartesian-coordinates
+my $x_sub = sub {
+    my ($side) = @_;
+    return 0.5 + 4.3 * cos( 2 * pi * $side / 6 + deg2rad(30.2) );
+};
+my $y_sub = sub {
+    my ($side) = @_;
+    return 0.5 + 4.3 * sin( 2 * pi * $side / 6 + deg2rad(30.2) );
+};
+is_deeply( $poly_ast->coords, [
+    map {[ $x_sub->( $_ ), $y_sub->( $_ ) ]} (1..6)
+]);
