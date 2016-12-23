@@ -51,14 +51,16 @@ my $DSL = <<'END_DSL';
     :default ::= action => _do_first_arg
 
 
-    Start ::= Block+ action => _do_build_ast_obj
+    Start ::= Blocks action => _do_build_ast_obj
+
+    Blocks ::= Block+ action => _do_blocks
 
     Block ::= Functions | EffectBlocks | ColorVariableSet | NumberVariableSet
         | IntegerVariableSet
 
     EffectBlocks ::= EffectBlock+ action => _do_arg_list_ref
 
-    EffectBlock ::= EffectName OpenCurly Block CloseCurly
+    EffectBlock ::= EffectName OpenCurly Blocks CloseCurly
         action => _do_effect_block
 
     EffectName ~ 'glow'
@@ -288,6 +290,16 @@ sub _do_poly_func
         color => $color,
     });
     return $cmd;
+}
+
+sub _do_blocks
+{
+    # Block+ 
+    my ($self, @blocks) = @_;
+    @blocks =
+        map { @$_ if ref $_ }
+        grep { defined } @blocks;
+    return \@blocks;
 }
 
 sub _do_effect_block
