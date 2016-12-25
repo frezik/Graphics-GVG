@@ -42,6 +42,16 @@ has color => (
     default => 0,
 );
 
+sub to_string
+{
+    my ($self) = @_;
+    my $str = 'circle( #'
+        . sprintf( '%08x', $self->color )
+        . ', ' . join( ', ', $self->cx, $self->cy, $self->r )
+        . " );\n";
+    return $str;
+}
+
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

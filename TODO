@@ -1,4 +1,4 @@
-Version 0.4
+Version 0.5
 ===========
 * Include files
 * Arc
@@ -7,6 +7,3 @@ Version 0.4
 * Chipmunk renderer (as its own module)
 * SVG renderer (as its own module)
 * Callback system that will unify walking the AST across different renderers
-* Inkscape extension
-    * Reading
-    * Writing

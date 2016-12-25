@@ -32,6 +32,18 @@ use Graphics::GVG::AST::Effect;
 with 'Graphics::GVG::AST::Effect';
 
 
+sub to_string
+{
+    my ($self) = @_;
+    my @commands = @{ $self->commands };
+
+    my $str = "glow {\n";
+    $str .= join( "", map { $_->to_string } @commands );
+    $str .= "}\n";
+
+    return $str;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 1;

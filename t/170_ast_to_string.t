@@ -21,40 +21,39 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-package Graphics::GVG::AST::Ellipse;
-
+use Test::More tests => 1;
 use strict;
-use warnings;
-use Moose;
-use namespace::autoclean;
-use Graphics::GVG::AST::Command;
+use Graphics::GVG;
+use Graphics::GVG::AST;
+use Graphics::GVG::AST::Line;
 
-with 'Graphics::GVG::AST::Command';
+my $GVG_SCRIPT = <<'END';
+    %color = #993399ff;
+    circle( %color, 0.5, 0.25, 0.3 );
 
-has [qw{ cx cy rx ry }] => (
-    is => 'ro',
-    isa => 'Num',
-    default => 0.0,
-);
-has color => (
-    is => 'ro',
-    isa => 'Int',
-    default => 0,
-);
+    glow {
+        %color = #33ff33ff;
+        line( %color, 0.25, 0.25, 0.75, 0.75 );
+        line( %color, 0.75, 0.75, 0.75, -0.75 );
+        line( %color, 0.75, -0.75, 0.25, 0.25 );
+    }
 
-sub to_string
-{
-    my ($self) = @_;
-    my $str = 'ellipse( #'
-        . sprintf( '%08x', $self->color )
-        . ', ' . join( ', ', $self->cx, $self->cy, $self->rx, $self->ry )
-        . " );\n";
-    return $str;
+    %color = #88aa88ff;
+    poly( %color, -0.25, -0.25, 0.6, 6, 0 );
+END
+
+
+my $gvg = Graphics::GVG->new;
+my $ast = $gvg->parse( $GVG_SCRIPT );
+my $gvg_string = $ast->to_string;
+
+my $expect_gvg = <<'END';
+circle( #993399ff, 0.5, 0.25, 0.3 );
+glow {
+line( #33ff33ff, 0.25, 0.25, 0.75, 0.75 );
+line( #33ff33ff, 0.75, 0.75, 0.75, -0.75 );
+line( #33ff33ff, 0.75, -0.75, 0.25, 0.25 );
 }
-
-
-no Moose;
-__PACKAGE__->meta->make_immutable;
-1;
-__END__
-
+poly( #88aa88ff, -0.25, -0.25, 0.6, 6, 0 );
+END
+cmp_ok( $expect_gvg, 'eq', $gvg_string, "Can output AST as a GVG script" );

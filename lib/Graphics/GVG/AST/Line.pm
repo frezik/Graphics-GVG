@@ -42,6 +42,16 @@ has color => (
     default => 0,
 );
 
+sub to_string
+{
+    my ($self) = @_;
+    my $str = 'line( #'
+        . sprintf( '%08x', $self->color )
+        . ', ' . join( ', ', $self->x1, $self->y1, $self->x2, $self->y2 )
+        . " );\n";
+    return $str;
+}
+
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

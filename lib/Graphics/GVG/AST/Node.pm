@@ -28,6 +28,9 @@ use warnings;
 use Moose::Role;
 
 
+requires 'to_string';
+
+
 1;
 __END__
 

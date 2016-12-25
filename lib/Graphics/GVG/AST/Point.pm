@@ -31,7 +31,7 @@ use Graphics::GVG::AST::Command;
 
 with 'Graphics::GVG::AST::Command';
 
-has [qw{ x y point }] => (
+has [qw{ x y size }] => (
     is => 'ro',
     isa => 'Num',
     default => 0.0,
@@ -41,6 +41,17 @@ has color => (
     isa => 'Int',
     default => 0,
 );
+
+
+sub to_string
+{
+    my ($self) = @_;
+    my $str = 'point( #'
+        . sprintf( '%08x', $self->color )
+        . ', ' . join( ', ', $self->x, $self->y, $self->point )
+        . " );\n";
+    return $str;
+}
 
 
 no Moose;

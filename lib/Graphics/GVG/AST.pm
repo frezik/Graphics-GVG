@@ -41,6 +41,14 @@ has 'commands' => (
 );
 
 
+sub to_string
+{
+    my ($self) = @_;
+    my @commands = @{ $self->commands };
+    return join( "", map { $_->to_string } @commands );
+}
+
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 1;
@@ -67,10 +75,22 @@ objects. Each of these nodes correspond to a command or an effect.
 Note that variables are filled in statically. They don't appear in the 
 generated AST.
 
+=head1 METHODS
+
+=head2 to_string
+
+Returns the string corresponding to the GVG script representation of the 
+AST. Note that the output may not be exactly what you input, as certain 
+compile time transforms will loose information. The two should be semantically 
+identical, however.
+
 =head1 COMMANDS
 
 These all do the role C<Graphics::GVG::AST::Command>, which in turn does the 
 C<Graphics::GVG::AST::Node> role.
+
+All Nodes require a C<to_string()> method, which will output the GVG script 
+representation of the object.
 
 The attributes on each object correspond to their function description in the 
 language. See L<Graphics::GVG> for details.

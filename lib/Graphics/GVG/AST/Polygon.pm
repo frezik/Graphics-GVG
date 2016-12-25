@@ -72,6 +72,18 @@ sub BUILDARGS
 }
 
 
+sub to_string
+{
+    my ($self) = @_;
+    my $str = 'poly( #'
+        . sprintf( '%08x', $self->color )
+        . ', ' . join( ', ', $self->cx, $self->cy, $self->r, $self->sides,
+            $self->rotate )
+        . " );\n";
+    return $str;
+}
+
+
 sub _calc_x_coord
 {
     my ($class, $side, $total_sides, $radius, $rotate, $cx) = @_;
