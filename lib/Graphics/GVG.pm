@@ -174,9 +174,6 @@ END_DSL
 my $GRAMMAR = Marpa::R2::Scanless::G->new({
     source => \$DSL,
 });
-my $RECCE = Marpa::R2::Scanless::R->new({
-    grammar => $GRAMMAR,
-});
 
 has 'include_paths' => (
     is => 'ro',
@@ -203,8 +200,12 @@ has '_int_vars' => (
 sub parse
 {
     my ($self, $text) = @_;
-    $RECCE->read( \$text );
-    my $ast = $RECCE->value( $self );
+    my $recce = Marpa::R2::Scanless::R->new({
+        grammar => $GRAMMAR,
+    });
+
+    $recce->read( \$text );
+    my $ast = $recce->value( $self );
     return $$ast;
 }
 
