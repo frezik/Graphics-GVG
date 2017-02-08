@@ -602,10 +602,10 @@ A point of the given C<%color>, at C<$x,$y>, with size C<$size>.
 
 =head3 poly
 
-  poly( %color, $cx, $cy, &sides, $r );
+  poly( %color, $cx, $cy, $r, &sides, $rotate );
 
-A regular polygon of the given C<%color>, centered at C<$cx,$cy>, with radius 
-C<$r>, and C<&sides> number of sides.
+A regular polygon of the given C<%color>, centered at C<$cx,$cy>, rotated 
+C<$rotate> degrees, with radius C<$r>, and C<&sides> number of sides.
 
 =head2 Effects
 
