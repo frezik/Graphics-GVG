@@ -1,5 +1,9 @@
 Revision history for perl module Graphics::GVG
 
+0.7 2017-05-08
+
+- Add meta vars
+
 0.6 2017-02-07
 
 - Fix documentation of poly function

@@ -5,5 +5,4 @@ Version 0.7
 * Rotate ellipses
 * Bezier curve
 * Chipmunk renderer (as its own module)
-* SVG renderer (as its own module)
 * Callback system that will unify walking the AST across different renderers

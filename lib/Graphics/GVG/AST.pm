@@ -40,6 +40,13 @@ has 'commands' => (
     },
 );
 
+has 'meta_data' => (
+    is => 'ro',
+    isa => 'HashRef[Str]',
+    default => sub {{}},
+    writer => '_set_meta_data',
+);
+
 
 sub to_string
 {
@@ -83,6 +90,11 @@ Returns the string corresponding to the GVG script representation of the
 AST. Note that the output may not be exactly what you input, as certain 
 compile time transforms will loose information. The two should be semantically 
 identical, however.
+
+=head2 meta_data
+
+Returns the hashref of metadata associated with this AST. This is only set 
+on the root element of the AST.
 
 =head1 COMMANDS
 

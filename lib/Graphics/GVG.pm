@@ -60,6 +60,7 @@ my $DSL = <<'END_DSL';
         | ColorVariableSet
         | NumberVariableSet
         | IntegerVariableSet
+        | MetaVariableSet
 
     EffectBlocks ::= EffectBlock+ action => _do_arg_list_ref
 
@@ -116,6 +117,9 @@ my $DSL = <<'END_DSL';
     IntegerVariableSet ::= '&' VarName '=' Integer SemiColon
         action => _set_int_var
 
+    MetaVariableSet ::= '!' VarName '=' MetaValue SemiColon
+        action => _set_meta_var
+
     NumberValue ::= Number | NumberLookup
 
     ColorValue ::= Color | ColorLookup
@@ -131,6 +135,14 @@ my $DSL = <<'END_DSL';
     # TODO
     #Include ::= '^include<' FileName '>'
     #    action => _do_include
+
+    MetaValue ::= Number
+        | Integer
+        | Str
+
+    Str ~ '"' StrChars '"'
+
+    StrChars ~ [\w\s]+
 
     Number ~ Digits
         | Digits Dot Digits
@@ -180,6 +192,11 @@ has 'include_paths' => (
     isa => 'ArrayRef[Str]',
     default => sub {[]},
 );
+has '_meta' => (
+    is => 'ro',
+    isa => 'HashRef[Str]',
+    default => sub {{}},
+);
 has '_num_vars' => (
     is => 'ro',
     isa => 'HashRef[Num]',
@@ -227,6 +244,18 @@ sub _do_line_func
         color => $color,
     });
     return $line;
+}
+
+sub _set_meta_var
+{
+    # '!' VarName '=' MetaValue SemiColon
+    my ($self, undef, $name, undef, $value) = @_;
+    # Trim the quotes around strings
+    $value =~ s/\A"//;
+    $value =~ s/"\z//;
+    $self->_meta->{$name} = $value;
+
+    return undef;
 }
 
 sub _do_circle_func
@@ -346,6 +375,7 @@ sub _do_build_ast_obj
 
     my $ast = Graphics::GVG::AST->new({
         commands => \@ast_list,
+        meta => $self->_meta,
     });
     return $ast;
 }
@@ -563,6 +593,20 @@ Variables can be redefined at any time:
     line( %color, 0, 1, 1, 0 );
     %color = #aabbaaff;
     line( %color, 1, 0, 1, 1 );
+
+=head2 Meta Information
+
+Meta info is general things that renderers may need to work with, and are 
+usually dependent on a larger context. For instance, you might put in 
+a C<!size = "small";>, which might be sized relative to tiny, medium, 
+large, huge, etc. objects in the rest of the system.
+
+Meta statements start with C<!> and are followed by a name and a value. 
+The value can be a float, integer, or a string (surrounded by double quotes). 
+
+    !name = "flying thing";
+    !size = "small";
+    !side = 1;
 
 =head2 Functions
 
