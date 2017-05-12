@@ -28,6 +28,11 @@ use warnings;
 use Moose::Role;
 
 requires '_make_pack';
+requires '_make_line';
+requires '_make_rect';
+requires '_make_poly';
+requires '_make_circle';
+requires '_make_ellipse';
 
 has 'glow_count' => (
     traits => ['Counter'],
