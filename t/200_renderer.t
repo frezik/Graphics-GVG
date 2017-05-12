@@ -35,32 +35,32 @@ with 'Graphics::GVG::Renderer';
 use Test::More;
 
 
-sub _make_pack
+sub make_pack
 {
     # Ignore
 }
 
-sub _make_line
+sub make_line
 {
     pass( "Called _make_line" );
 }
 
-sub _make_rect
+sub make_rect
 {
     pass( "Called _make_rect" );
 }
 
-sub _make_poly
+sub make_poly
 {
     pass( "Called _make_poly" );
 }
 
-sub _make_circle
+sub make_circle
 {
     pass( "Called _make_circle" );
 }
 
-sub _make_ellipse
+sub make_ellipse
 {
     pass( "Called _make_ellipse" );
 }

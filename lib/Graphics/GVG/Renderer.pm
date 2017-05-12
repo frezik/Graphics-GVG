@@ -27,12 +27,12 @@ use strict;
 use warnings;
 use Moose::Role;
 
-requires '_make_pack';
-requires '_make_line';
-requires '_make_rect';
-requires '_make_poly';
-requires '_make_circle';
-requires '_make_ellipse';
+requires 'make_pack';
+requires 'make_line';
+requires 'make_rect';
+requires 'make_poly';
+requires 'make_circle';
+requires 'make_ellipse';
 
 has 'glow_count' => (
     traits => ['Counter'],
@@ -60,9 +60,21 @@ sub make_obj
 sub make_code
 {
     my ($self, $ast) = @_;
-    my $pack = $self->_make_pack;
-    my $code = $self->_walk_ast( $pack, $ast );
+    my $pack = $self->make_pack;
+    my $code = $self->make_opening_code( $pack );
+    $code .= $self->_walk_ast( $pack, $ast );
+    $code .= $self->make_closing_code( $pack );
     return ($code, $pack);
+}
+
+sub make_opening_code
+{
+    return '';
+}
+
+sub make_closing_code
+{
+    return '';
 }
 
 sub _walk_ast
@@ -74,19 +86,19 @@ sub _walk_ast
             warn "Not a ref, don't know what to do with '$_'\n";
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Line' ) ) {
-            $ret = $self->_make_line( $_ );
+            $ret = $self->make_line( $_ );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Rect' ) ) {
-            $ret = $self->_make_rect( $_ );
+            $ret = $self->make_rect( $_ );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Polygon' ) ) {
-            $ret = $self->_make_poly( $_ );
+            $ret = $self->make_poly( $_ );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Circle' ) ) {
-            $ret = $self->_make_circle( $_ );
+            $ret = $self->make_circle( $_ );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Ellipse' ) ) {
-            $ret = $self->_make_ellipse( $_ );
+            $ret = $self->make_ellipse( $_ );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Glow' ) ) {
             $self->_increment_glow;
