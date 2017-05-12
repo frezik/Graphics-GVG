@@ -21,40 +21,61 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-package Graphics::GVG::AST::Circle;
-
+use Test::More tests => 5;
 use strict;
 use warnings;
+use Graphics::GVG;
+use Graphics::GVG::AST;
+use Graphics::GVG::Renderer;
+
+
+package RenderMock;
 use Moose;
-use namespace::autoclean;
-use Graphics::GVG::AST::Command;
+with 'Graphics::GVG::Renderer';
+use Test::More;
 
-with 'Graphics::GVG::AST::Command';
 
-has [qw{ cx cy r }] => (
-    is => 'ro',
-    isa => 'Num',
-    default => 0.0,
-);
-has color => (
-    is => 'ro',
-    isa => 'Int',
-    default => 0,
-);
-
-sub to_string
+sub _make_pack
 {
-    my ($self) = @_;
-    my $str = 'circle( #'
-        . sprintf( '%08x', $self->color )
-        . ', ' . join( ', ', $self->cx, $self->cy, $self->r )
-        . " );\n";
-    return $str;
+    # Ignore
+}
+
+sub _make_line
+{
+    pass( "Called _make_line" );
+}
+
+sub _make_rect
+{
+    pass( "Called _make_rect" );
+}
+
+sub _make_poly
+{
+    pass( "Called _make_poly" );
+}
+
+sub _make_circle
+{
+    pass( "Called _make_circle" );
+}
+
+sub _make_ellipse
+{
+    pass( "Called _make_ellipse" );
 }
 
 
-no Moose;
-__PACKAGE__->meta->make_immutable;
-1;
-__END__
+package main;
 
+my $CODE = <<'END';
+    line( #ff33ff00, 0, 0, 1, 1 );
+    circle( #993399ff, 0, 0, 1.0 );
+    rect( #ff33ff00, 0, 1, 2, 3.1 );
+    ellipse( #ff33ff00, 0, 0, 5.1, 3.4 );
+    poly( #ff33ff00, 0, 0, 4.3, 6, 30.2 );
+END
+
+my $gvg = Graphics::GVG->new;
+my $ast = $gvg->parse( $CODE );
+RenderMock->make_code( $ast );
