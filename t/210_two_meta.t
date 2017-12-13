@@ -21,21 +21,28 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 14;
+use Test::More tests => 2;
 use strict;
-use warnings;
+use Graphics::GVG;
+use Graphics::GVG::AST;
+use Graphics::GVG::AST::Line;
 
-use_ok( 'Graphics::GVG::AST::Node' );
-use_ok( 'Graphics::GVG::AST::Command' );
-use_ok( 'Graphics::GVG::AST::Effect' );
-use_ok( 'Graphics::GVG::AST' );
-use_ok( 'Graphics::GVG::AST::Circle' );
-use_ok( 'Graphics::GVG::AST::Ellipse' );
-use_ok( 'Graphics::GVG::AST::Glow' );
-use_ok( 'Graphics::GVG::AST::Line' );
-use_ok( 'Graphics::GVG::AST::Point' );
-use_ok( 'Graphics::GVG::AST::Polygon' );
-use_ok( 'Graphics::GVG::AST::Rect' );
-use_ok( 'Graphics::GVG::Renderer' );
-use_ok( 'Graphics::GVG::Args' );
-use_ok( 'Graphics::GVG' );
+my $LINES1 = <<'END';
+    !size = "small";
+    line( #ff33ff00, 0.0, 0.0, 1.0, 1.1 );
+END
+my $LINES2 = <<'END';
+    !size = "medium";
+    line( #ff33ff00, 0.0, 0.0, 1.0, 1.1 );
+END
+
+
+my $gvg = Graphics::GVG->new;
+
+my $ast1 = $gvg->parse( $LINES1 );
+my $ast2 = $gvg->parse( $LINES2 );
+
+cmp_ok( $ast1->meta_data->{size}, 'eq', 'small',
+    "Meta data is separate between two parses" );
+cmp_ok( $ast2->meta_data->{size}, 'eq', 'medium',
+    "Meta data is separate between two parses" );

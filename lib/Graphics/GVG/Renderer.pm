@@ -48,12 +48,12 @@ has 'glow_count' => (
 
 sub make_obj
 {
-    my ($self, $ast) = @_;
+    my ($self, $ast, $args) = @_;
 
     my ($code, $pack) = $self->make_code( $ast );
     eval $code or die $@;
 
-    my $obj = $pack->new;
+    my $obj = $pack->new( $args );
     return $obj;
 }
 
@@ -61,9 +61,9 @@ sub make_code
 {
     my ($self, $ast) = @_;
     my $pack = $self->make_pack;
-    my $code = $self->make_opening_code( $pack );
-    $code .= $self->_walk_ast( $pack, $ast );
-    $code .= $self->make_closing_code( $pack );
+    my $code = $self->make_opening_code( $pack, $ast );
+    $code .= $self->_walk_ast( $pack, $ast, $ast );
+    $code .= $self->make_closing_code( $pack, $ast );
     return ($code, $pack);
 }
 
@@ -79,30 +79,30 @@ sub make_closing_code
 
 sub _walk_ast
 {
-    my ($self, $pack, $ast) = @_;
+    my ($self, $pack, $root_ast, $ast) = @_;
     my $code = join( "\n", map {
         my $ret = '';
         if(! ref $_ ) {
             warn "Not a ref, don't know what to do with '$_'\n";
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Line' ) ) {
-            $ret = $self->make_line( $_ );
+            $ret = $self->make_line( $_, $root_ast );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Rect' ) ) {
-            $ret = $self->make_rect( $_ );
+            $ret = $self->make_rect( $_, $root_ast );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Polygon' ) ) {
-            $ret = $self->make_poly( $_ );
+            $ret = $self->make_poly( $_, $root_ast );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Circle' ) ) {
-            $ret = $self->make_circle( $_ );
+            $ret = $self->make_circle( $_, $root_ast );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Ellipse' ) ) {
-            $ret = $self->make_ellipse( $_ );
+            $ret = $self->make_ellipse( $_, $root_ast );
         }
         elsif( $_->isa( 'Graphics::GVG::AST::Glow' ) ) {
             $self->_increment_glow;
-            $ret = $self->_walk_ast( $pack, $_ );
+            $ret = $self->_walk_ast( $pack, $root_ast, $_ );
             $self->_decrement_glow;
         }
         else {

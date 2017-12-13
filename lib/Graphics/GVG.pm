@@ -30,6 +30,7 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use Marpa::R2;
+use Graphics::GVG::Args;
 use Graphics::GVG::AST::Command;
 use Graphics::GVG::AST::Effect;
 use Graphics::GVG::AST;
@@ -71,17 +72,15 @@ my $DSL = <<'END_DSL';
 
     Functions ::= Function+ action => _do_arg_list_ref
 
-    Function ::= LineFunc SemiColon
+    Function ::= GenericFunc SemiColon
         | CircleFunc SemiColon
         | EllipseFunc SemiColon
         | RectFunc SemiColon
         | PointFunc SemiColon
         | PolyFunc SemiColon
 
-    LineFunc ::= 
-        'line' OpenParen
-            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma NumberValue
-            CloseParen action => _do_line_func
+    GenericFunc ::= FuncName OpenParen Args CloseParen
+        action => _do_generic_func
 
     CircleFunc ::=
         'circle' OpenParen
@@ -131,6 +130,16 @@ my $DSL = <<'END_DSL';
     ColorLookup ::= '%' VarName action => _do_color_lookup
 
     IntegerLookup ::= '&' VarName action => _do_int_lookup
+
+    FuncName ::= VarName
+
+    Args ::= Arg action => _do_args
+        | Arg Comma Args action => _do_args
+        | Arg Comma Args Comma action => _do_args
+
+    Arg ::= NumberValue
+        | ColorValue
+        | IntegerValue
 
     # TODO
     #Include ::= '^include<' FileName '>'
@@ -187,6 +196,11 @@ my $GRAMMAR = Marpa::R2::Scanless::G->new({
     source => \$DSL,
 });
 
+has 'funcs' => (
+    is => 'ro',
+    isa => 'HashRef[Str]',
+    builder => '_buildFuncs',
+);
 has 'include_paths' => (
     is => 'ro',
     isa => 'ArrayRef[Str]',
@@ -196,6 +210,7 @@ has '_meta' => (
     is => 'ro',
     isa => 'HashRef[Str]',
     default => sub {{}},
+    writer => '_set_meta',
 );
 has '_num_vars' => (
     is => 'ro',
@@ -221,27 +236,64 @@ sub parse
         grammar => $GRAMMAR,
     });
 
+    # Make sure any old meta data is cleared out
+    $self->_set_meta({});
+
     $recce->read( \$text );
     my $ast = $recce->value( $self );
     return $$ast;
 }
 
 
+sub _buildFuncs
+{
+    my ($self) = @_;
+    return {
+        'line' => '_do_line_func',
+    };
+}
+
 #
 # Parse action callbacks
 #
+
+sub _do_args
+{
+    # Arg
+    # Arg Comma Args
+    # Arg Comma Args Comma
+    my ($self, $first_arg, undef, $remaining_args, undef) = @_;
+    my @args = ($first_arg);
+    push @args, @{ $remaining_args->positional_args }
+        if defined $remaining_args;
+
+    my $arg_obj = Graphics::GVG::Args->new({
+        positional_args => \@args,
+    });
+    return $arg_obj;
+}
+
+sub _do_generic_func
+{
+    # FuncName OpenParen Args CloseParen
+    my ($self, $name, undef, $args, undef) = @_;
+    die "Could not find function named '$name'\n"
+        unless exists $self->funcs->{$name};
+
+    my $func = $self->funcs->{$name};
+    return $self->$func( $args );
+}
+
 sub _do_line_func
 {
-    # 'line' OpenParen Color Comma Number Comma Number Comma Number Comma Number
-    my ($self, undef, undef, $color, undef, $x1, undef, $y1, undef,
-        $x2, undef, $y2) = @_;
-    $color = $self->_color_hex_to_int( $color );
+    my ($self, $args) = @_;
+    $args->names(qw{ color x1 y1 x2 y2 });
     my $line = Graphics::GVG::AST::Line->new({
-        x1 => $x1,
-        y1 => $y1,
-        x2 => $x2,
-        y2 => $y2,
-        color => $color,
+        x1 => $args->arg( 'x1', $args->INTEGER ),
+        y1 => $args->arg( 'y1', $args->INTEGER ),
+        x2 => $args->arg( 'x2', $args->INTEGER ),
+        y2 => $args->arg( 'y2', $args->INTEGER ),
+        color => $args->arg( 'color', $args->COLOR ),
     });
     return $line;
 }
@@ -375,7 +427,7 @@ sub _do_build_ast_obj
 
     my $ast = Graphics::GVG::AST->new({
         commands => \@ast_list,
-        meta => $self->_meta,
+        meta_data => $self->_meta,
     });
     return $ast;
 }
