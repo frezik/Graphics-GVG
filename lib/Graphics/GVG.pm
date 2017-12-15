@@ -73,18 +73,12 @@ my $DSL = <<'END_DSL';
     Functions ::= Function+ action => _do_arg_list_ref
 
     Function ::= GenericFunc SemiColon
-        | EllipseFunc SemiColon
         | RectFunc SemiColon
         | PointFunc SemiColon
         | PolyFunc SemiColon
 
     GenericFunc ::= FuncName OpenParen Args CloseParen
         action => _do_generic_func
-
-    EllipseFunc ::=
-        'ellipse' OpenParen
-            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue
-            Comma NumberValue CloseParen action => _do_ellipse_func
 
     RectFunc ::= 
         'rect' OpenParen
@@ -239,15 +233,6 @@ sub parse
 }
 
 
-sub _buildFuncs
-{
-    my ($self) = @_;
-    return {
-        'line' => '_do_line_func',
-        'circle' => '_do_circle_func',
-    };
-}
-
 #
 # Parse action callbacks
 #
@@ -298,12 +283,26 @@ sub _do_generic_func
             r => Graphics::GVG::Args->NUMBER,
             color => Graphics::GVG::Args->COLOR,
         },
+        '_do_ellipse_func' => {
+            '_order' => [qw{ color cx cy rx ry }],
+            '_class' => 'Graphics::GVG::AST::Ellipse',
+            cx => Graphics::GVG::Args->NUMBER,
+            cy => Graphics::GVG::Args->NUMBER,
+            rx => Graphics::GVG::Args->NUMBER,
+            ry => Graphics::GVG::Args->NUMBER,
+            color => Graphics::GVG::Args->COLOR,
+        },
     );
+    my %SHORT_FUNCS;
+
     foreach my $func_name (keys %FUNCS) {
         no strict 'refs';
         my %arg_def = %{ $FUNCS{$func_name} };
         my @order = @{ $arg_def{'_order'} };
         my $class = $arg_def{'_class'};
+
+        my ($short_func_name) = $func_name =~ /\A _do_ (.+) _func \z/x;
+        $SHORT_FUNCS{$short_func_name} = $func_name;
 
         *$func_name = sub {
             my ($self, $args) = @_;
@@ -317,6 +316,11 @@ sub _do_generic_func
             return $obj;
         };
     }
+
+    sub _buildFuncs
+    {
+        return \%SHORT_FUNCS;
+    }
 }
 
 sub _set_meta_var
@@ -329,21 +333,6 @@ sub _set_meta_var
     $self->_meta->{$name} = $value;
 
     return undef;
-}
-
-sub _do_ellipse_func
-{
-    # 'ellipse' OpenParen ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma NumberValue
-    my ($self, undef, undef, $color, undef, $cx, undef, $cy, undef, $rx, undef, $ry) = @_;
-    $color = $self->_color_hex_to_int( $color );
-    my $ellipse = Graphics::GVG::AST::Ellipse->new({
-        cx => $cx,
-        cy => $cy,
-        rx => $rx,
-        ry => $ry,
-        color => $color,
-    });
-    return $ellipse;
 }
 
 sub _do_rect_func
