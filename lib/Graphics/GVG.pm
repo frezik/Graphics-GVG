@@ -279,18 +279,36 @@ sub _do_generic_func
     return $self->$func( $args );
 }
 
-sub _do_line_func
 {
-    my ($self, $args) = @_;
-    $args->names(qw{ color x1 y1 x2 y2 });
-    my $line = Graphics::GVG::AST::Line->new({
-        x1 => $args->arg( 'x1', $args->NUMBER ),
-        y1 => $args->arg( 'y1', $args->NUMBER ),
-        x2 => $args->arg( 'x2', $args->NUMBER ),
-        y2 => $args->arg( 'y2', $args->NUMBER ),
-        color => $args->arg( 'color', $args->COLOR ),
-    });
-    return $line;
+    my %FUNCS = (
+        '_do_line_func' => {
+            '_order' => [qw{ color x1 y1 x2 y2 }],
+            '_class' => 'Graphics::GVG::AST::Line',
+            x1 => Graphics::GVG::Args->NUMBER,
+            y1 => Graphics::GVG::Args->NUMBER,
+            x2 => Graphics::GVG::Args->NUMBER,
+            y2 => Graphics::GVG::Args->NUMBER,
+            color => Graphics::GVG::Args->COLOR,
+        },
+    );
+    foreach my $func_name (keys %FUNCS) {
+        no strict 'refs';
+        my %arg_def = %{ $FUNCS{$func_name} };
+        my @order = @{ $arg_def{'_order'} };
+        my $class = $arg_def{'_class'};
+
+        *$func_name = sub {
+            my ($self, $args) = @_;
+            $args->names( @order );
+            my $obj = $class->new({
+                map {
+                    $_ => $args->arg( $_, $arg_def{$_} )
+                } @order
+            });
+
+            return $obj;
+        };
+    }
 }
 
 sub _do_circle_func
