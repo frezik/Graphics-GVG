@@ -73,17 +73,12 @@ my $DSL = <<'END_DSL';
     Functions ::= Function+ action => _do_arg_list_ref
 
     Function ::= GenericFunc SemiColon
-        | RectFunc SemiColon
         | PointFunc SemiColon
         | PolyFunc SemiColon
 
     GenericFunc ::= FuncName OpenParen Args CloseParen
         action => _do_generic_func
 
-    RectFunc ::= 
-        'rect' OpenParen
-            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma NumberValue
-            CloseParen action => _do_rect_func
 
     PointFunc ::= 
         'point' OpenParen
@@ -292,6 +287,15 @@ sub _do_generic_func
             ry => Graphics::GVG::Args->NUMBER,
             color => Graphics::GVG::Args->COLOR,
         },
+        '_do_rect_func' => {
+            '_order' => [qw{ color x y width height }],
+            '_class' => 'Graphics::GVG::AST::Rect',
+            x => Graphics::GVG::Args->NUMBER,
+            y => Graphics::GVG::Args->NUMBER,
+            width => Graphics::GVG::Args->NUMBER,
+            height => Graphics::GVG::Args->NUMBER,
+            color => Graphics::GVG::Args->COLOR,
+        },
     );
     my %SHORT_FUNCS;
 
@@ -333,22 +337,6 @@ sub _set_meta_var
     $self->_meta->{$name} = $value;
 
     return undef;
-}
-
-sub _do_rect_func
-{
-    # 'rect' OpenParen Color Comma Number Comma Number Comma Number Comma Number
-    my ($self, undef, undef, $color, undef, $x, undef, $y, undef,
-        $width, undef, $height) = @_;
-    $color = $self->_color_hex_to_int( $color );
-    my $cmd = Graphics::GVG::AST::Rect->new({
-        x => $x,
-        y => $y,
-        width => $width,
-        height => $height,
-        color => $color,
-    });
-    return $cmd;
 }
 
 sub _do_point_func
