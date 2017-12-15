@@ -73,15 +73,9 @@ my $DSL = <<'END_DSL';
     Functions ::= Function+ action => _do_arg_list_ref
 
     Function ::= GenericFunc SemiColon
-        | PolyFunc SemiColon
 
     GenericFunc ::= FuncName OpenParen Args CloseParen
         action => _do_generic_func
-
-    PolyFunc ::= 
-        'poly' OpenParen
-            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma IntegerValue Comma NumberValue
-            CloseParen action => _do_poly_func
 
     NumberVariableSet ::= '$' VarName '=' Number SemiColon
         action => _set_num_var
@@ -297,6 +291,16 @@ sub _do_generic_func
             size => Graphics::GVG::Args->NUMBER,
             color => Graphics::GVG::Args->COLOR,
         },
+        '_do_poly_func' => {
+            '_order' => [qw{ color cx cy r sides rotate }],
+            '_class' => 'Graphics::GVG::AST::Polygon',
+            cx => Graphics::GVG::Args->NUMBER,
+            cy => Graphics::GVG::Args->NUMBER,
+            r => Graphics::GVG::Args->NUMBER,
+            sides => Graphics::GVG::Args->NUMBER,
+            rotate => Graphics::GVG::Args->NUMBER,
+            color => Graphics::GVG::Args->COLOR,
+        },
     );
     my %SHORT_FUNCS;
 
@@ -338,23 +342,6 @@ sub _set_meta_var
     $self->_meta->{$name} = $value;
 
     return undef;
-}
-
-sub _do_poly_func
-{
-    # 'poly' OpenParen ColorValue Comma NumberValue Comma NumberValue Comma NumberValue Comma IntegerValue Comma NumberValue
-    my ($self, undef, undef, $color, undef, $cx, undef, $cy, undef,
-        $radius, undef, $sides, undef, $rotate) = @_;
-    $color = $self->_color_hex_to_int( $color );
-    my $cmd = Graphics::GVG::AST::Polygon->new({
-        cx => $cx,
-        cy => $cy,
-        r => $radius,
-        sides => $sides,
-        rotate => $rotate,
-        color => $color,
-    });
-    return $cmd;
 }
 
 sub _do_blocks
