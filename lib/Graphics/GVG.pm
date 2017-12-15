@@ -73,7 +73,6 @@ my $DSL = <<'END_DSL';
     Functions ::= Function+ action => _do_arg_list_ref
 
     Function ::= GenericFunc SemiColon
-        | CircleFunc SemiColon
         | EllipseFunc SemiColon
         | RectFunc SemiColon
         | PointFunc SemiColon
@@ -81,11 +80,6 @@ my $DSL = <<'END_DSL';
 
     GenericFunc ::= FuncName OpenParen Args CloseParen
         action => _do_generic_func
-
-    CircleFunc ::=
-        'circle' OpenParen
-            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue
-            CloseParen action => _do_circle_func
 
     EllipseFunc ::=
         'ellipse' OpenParen
@@ -250,6 +244,7 @@ sub _buildFuncs
     my ($self) = @_;
     return {
         'line' => '_do_line_func',
+        'circle' => '_do_circle_func',
     };
 }
 
@@ -289,13 +284,26 @@ sub _do_line_func
     my ($self, $args) = @_;
     $args->names(qw{ color x1 y1 x2 y2 });
     my $line = Graphics::GVG::AST::Line->new({
-        x1 => $args->arg( 'x1', $args->INTEGER ),
-        y1 => $args->arg( 'y1', $args->INTEGER ),
-        x2 => $args->arg( 'x2', $args->INTEGER ),
-        y2 => $args->arg( 'y2', $args->INTEGER ),
+        x1 => $args->arg( 'x1', $args->NUMBER ),
+        y1 => $args->arg( 'y1', $args->NUMBER ),
+        x2 => $args->arg( 'x2', $args->NUMBER ),
+        y2 => $args->arg( 'y2', $args->NUMBER ),
         color => $args->arg( 'color', $args->COLOR ),
     });
     return $line;
+}
+
+sub _do_circle_func
+{
+    my ($self, $args) = @_;
+    $args->names(qw{ color cx cy r });
+    my $obj = Graphics::GVG::AST::Circle->new({
+        cx => $args->arg( 'cx', $args->NUMBER ),
+        cy => $args->arg( 'cy', $args->NUMBER ),
+        r => $args->arg( 'r', $args->NUMBER ),
+        color => $args->arg( 'color', $args->COLOR ),
+    });
+    return $obj;
 }
 
 sub _set_meta_var
@@ -308,20 +316,6 @@ sub _set_meta_var
     $self->_meta->{$name} = $value;
 
     return undef;
-}
-
-sub _do_circle_func
-{
-    # 'circle' OpenParen Color Comma Number Comma Number Comma Number
-    my ($self, undef, undef, $color, undef, $cx, undef, $cy, undef, $r) = @_;
-    $color = $self->_color_hex_to_int( $color );
-    my $circle = Graphics::GVG::AST::Circle->new({
-        cx => $cx,
-        cy => $cy,
-        r => $r,
-        color => $color,
-    });
-    return $circle;
 }
 
 sub _do_ellipse_func
