@@ -290,6 +290,14 @@ sub _do_generic_func
             y2 => Graphics::GVG::Args->NUMBER,
             color => Graphics::GVG::Args->COLOR,
         },
+        '_do_circle_func' => {
+            '_order' => [qw{ color cx cy r }],
+            '_class' => 'Graphics::GVG::AST::Circle',
+            cx => Graphics::GVG::Args->NUMBER,
+            cy => Graphics::GVG::Args->NUMBER,
+            r => Graphics::GVG::Args->NUMBER,
+            color => Graphics::GVG::Args->COLOR,
+        },
     );
     foreach my $func_name (keys %FUNCS) {
         no strict 'refs';
@@ -309,19 +317,6 @@ sub _do_generic_func
             return $obj;
         };
     }
-}
-
-sub _do_circle_func
-{
-    my ($self, $args) = @_;
-    $args->names(qw{ color cx cy r });
-    my $obj = Graphics::GVG::AST::Circle->new({
-        cx => $args->arg( 'cx', $args->NUMBER ),
-        cy => $args->arg( 'cy', $args->NUMBER ),
-        r => $args->arg( 'r', $args->NUMBER ),
-        color => $args->arg( 'color', $args->COLOR ),
-    });
-    return $obj;
 }
 
 sub _set_meta_var
