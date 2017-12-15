@@ -73,17 +73,10 @@ my $DSL = <<'END_DSL';
     Functions ::= Function+ action => _do_arg_list_ref
 
     Function ::= GenericFunc SemiColon
-        | PointFunc SemiColon
         | PolyFunc SemiColon
 
     GenericFunc ::= FuncName OpenParen Args CloseParen
         action => _do_generic_func
-
-
-    PointFunc ::= 
-        'point' OpenParen
-            ColorValue Comma NumberValue Comma NumberValue Comma NumberValue 
-            CloseParen action => _do_point_func
 
     PolyFunc ::= 
         'poly' OpenParen
@@ -296,6 +289,14 @@ sub _do_generic_func
             height => Graphics::GVG::Args->NUMBER,
             color => Graphics::GVG::Args->COLOR,
         },
+        '_do_point_func' => {
+            '_order' => [qw{ color x y size }],
+            '_class' => 'Graphics::GVG::AST::Point',
+            x => Graphics::GVG::Args->NUMBER,
+            y => Graphics::GVG::Args->NUMBER,
+            size => Graphics::GVG::Args->NUMBER,
+            color => Graphics::GVG::Args->COLOR,
+        },
     );
     my %SHORT_FUNCS;
 
@@ -337,20 +338,6 @@ sub _set_meta_var
     $self->_meta->{$name} = $value;
 
     return undef;
-}
-
-sub _do_point_func
-{
-    # 'point' OpenParen ColorValue Comma NumberValue Comma NumberValue Comma NumberValue 
-    my ($self, undef, undef, $color, undef, $x, undef, $y, undef, $size) = @_;
-    $color = $self->_color_hex_to_int( $color );
-    my $line = Graphics::GVG::AST::Point->new({
-        x => $x,
-        y => $y,
-        size => $size,
-        color => $color,
-    });
-    return $line;
 }
 
 sub _do_poly_func
