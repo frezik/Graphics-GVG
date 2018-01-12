@@ -25,6 +25,7 @@ package Graphics::GVG::Renderer;
 
 use strict;
 use warnings;
+use Data::UUID;
 use Moose::Role;
 
 requires 'make_line';
