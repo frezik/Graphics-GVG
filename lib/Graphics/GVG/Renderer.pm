@@ -27,7 +27,6 @@ use strict;
 use warnings;
 use Moose::Role;
 
-requires 'make_pack';
 requires 'make_line';
 requires 'make_rect';
 requires 'make_poly';
@@ -46,6 +45,14 @@ has 'glow_count' => (
 );
 
 
+sub make_pack
+{
+    my ($self) = @_;
+    my $uuid = Data::UUID->new->create_hex;
+    my $pack = __PACKAGE__ . '::' . $uuid;
+    return $pack;
+}
+
 sub make_obj
 {
     my ($self, $ast, $args) = @_;
@@ -60,7 +67,9 @@ sub make_obj
 sub make_code
 {
     my ($self, $ast) = @_;
-    my $pack = $self->make_pack;
+
+    my $pack = $ast->meta_data->{class}
+        // $self->make_pack;
     my $code = $self->make_opening_code( $pack, $ast );
     $code .= $self->_walk_ast( $pack, $ast, $ast );
     $code .= $self->make_closing_code( $pack, $ast );

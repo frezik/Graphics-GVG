@@ -21,7 +21,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 5;
+use Test::More tests => 6;
 use strict;
 use warnings;
 use Graphics::GVG;
@@ -34,11 +34,6 @@ use Moose;
 with 'Graphics::GVG::Renderer';
 use Test::More;
 
-
-sub make_pack
-{
-    # Ignore
-}
 
 sub make_line
 {
@@ -66,9 +61,20 @@ sub make_ellipse
 }
 
 
+package MockClass;
+use Test::More;
+
+sub call_pack
+{
+    pass( "Called call_pack" );
+}
+
+
 package main;
 
 my $CODE = <<'END';
+    !class = "MockClass";
+
     line( #ff33ff00, 0, 0, 1, 1 );
     circle( #993399ff, 0, 0, 1.0 );
     rect( #ff33ff00, 0, 1, 2, 3.1 );
@@ -78,4 +84,5 @@ END
 
 my $gvg = Graphics::GVG->new;
 my $ast = $gvg->parse( $CODE );
-RenderMock->make_code( $ast );
+my ($code, $pack) = RenderMock->make_code( $ast );
+$pack->call_pack;
