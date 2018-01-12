@@ -1,4 +1,4 @@
-# Copyright (c) 2017  Timm Murray
+# Copyright (c) 2016  Timm Murray
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without 
@@ -21,63 +21,49 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-package Graphics::GVG::Args;
-
+use Test::More tests => 2;
 use strict;
-use warnings;
-use Moose;
-use namespace::autoclean;
+use Graphics::GVG;
+use Graphics::GVG::AST;
+use Graphics::GVG::AST::Line;
 
-use constant INTEGER => 0;
-use constant COLOR => 1;
-use constant NUMBER => 2;
-
-has 'named_args' => (
-    is => 'ro',
-    isa => 'HashRef[Str]',
-    default => sub {{}},
-);
-has 'positional_args' => (
-    is => 'ro',
-    isa => 'ArrayRef[Str]',
-    default => sub {[]},
-);
-
-sub names
-{
-    my ($self, @names) = @_;
-    return if ! @{ $self->positional_args };
-    my @positional_args = @{ $self->positional_args };
-    my $num_args = scalar( @positional_args );
-    my $num_names = scalar @names;
-    die "Got $num_names names, but expected $num_args\n"
-        if $num_names != $num_args;
-
-    foreach my $i (0 .. $#names) {
-        my $name = $names[$i];
-        my $value = $positional_args[$i];
-        $self->named_args->{$name} = $value;
-    }
-
-    return;
-}
-
-sub arg
-{
-    my ($self, $name, $expect_type) = @_;
-
-    my $value = $self->named_args->{$name};
-    if( $self->COLOR == $expect_type ) {
-        $value =~ s/\A#//;
-        $value = hex $value;
-    }
-
-    return $value;
-}
+my $LINES = <<'END';
+    line({
+        color: #ff33ff00,
+        x1: 0.0,
+        y1: 0.0,
+        x2: 1.0,
+        y2: 1.1,
+    });
+    circle({ 
+        color: #ff33ff00,
+        cx: 0,
+        cy: 0,
+        r: 5.1,
+    });
+END
 
 
-no Moose;
-__PACKAGE__->meta->make_immutable;
-1;
-__END__
+my $gvg = Graphics::GVG->new;
+isa_ok( $gvg, 'Graphics::GVG' );
+my $ast = $gvg->parse( $LINES );
 
+my $expect_ast = Graphics::GVG::AST->new;
+my $line_ast = Graphics::GVG::AST::Line->new({
+    x1 => '0.0',
+    y1 => '0.0',
+    x2 => '1.0',
+    y2 => 1.1,
+    color => 0xff33ff00,
+});
+$expect_ast->push_command( $line_ast );
+
+my $circle_ast = Graphics::GVG::AST::Circle->new({
+    cx => 0,
+    cy => 0,
+    r => 5.1,
+    color => 0xff33ff00,
+});
+$expect_ast->push_command( $circle_ast );
+
+is_deeply( $ast, $expect_ast );

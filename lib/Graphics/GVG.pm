@@ -74,7 +74,7 @@ my $DSL = <<'END_DSL';
 
     Function ::= GenericFunc SemiColon
 
-    GenericFunc ::= FuncName OpenParen Args CloseParen
+    GenericFunc ::= FuncName OpenParen ParamList CloseParen
         action => _do_generic_func
 
     NumberVariableSet ::= '$' VarName '=' Number SemiColon
@@ -103,9 +103,22 @@ my $DSL = <<'END_DSL';
 
     FuncName ::= VarName
 
+    ParamList ::= NamedArgs | Args
+
     Args ::= Arg action => _do_args
         | Arg Comma Args action => _do_args
         | Arg Comma Args Comma action => _do_args
+
+    NamedArgs ::= OpenCurly NameValues CloseCurly action => _do_named_args
+
+    NameValues ::= NameValue action => _do_name_values
+        | NameValue Comma NameValues action => _do_name_values
+        | NameValue Comma NameValues Comma action => _do_name_values
+
+    NameValue ::= ArgName Colon Arg action => _do_name_value
+        | ArgName Colon Arg Comma action => _do_name_value
+
+    ArgName ::= VarName
 
     Arg ::= NumberValue
         | ColorValue
@@ -149,6 +162,8 @@ my $DSL = <<'END_DSL';
     OpenCurly ~ '{'
 
     CloseCurly ~ '}'
+
+    Colon ~ ':'
 
     SemiColon ~ ';'
 
@@ -233,6 +248,41 @@ sub _do_args
         positional_args => \@args,
     });
     return $arg_obj;
+}
+
+sub _do_named_args
+{
+    # '{' NameValues '}'
+    my ($self, undef, $args, undef) = @_;
+    return $args;
+}
+
+sub _do_name_values
+{
+    # NameValue
+    # NameValues Comma NameValue
+    # NameValues Comma NameValue
+    my ($self, $first_arg, undef, $remaining_args, undef) = @_;
+
+    my %args = (
+        @$first_arg,
+        (defined $remaining_args
+            ? %{ $remaining_args->named_args }
+            : ()),
+    );
+
+    my $arg_obj = Graphics::GVG::Args->new({
+        named_args => \%args,
+    });
+    return $arg_obj;
+}
+
+sub _do_name_value
+{
+    # ArgName ':' Arg
+    # ArgName ':' Arg Comma
+    my ($self, $name, undef, $value, undef) = @_;
+    return [ $name, $value ];
 }
 
 sub _do_generic_func

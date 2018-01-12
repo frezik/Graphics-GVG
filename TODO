@@ -3,7 +3,11 @@ Version 0.9
 * Rename 'meta' to something that doesn't conflict with an existing
   Moose method
 * Include files
+* Renderer->make_code() can fill in the $pack based on a meta attribute
+
+
+Version 0.91
+============
 * Arc
 * Rotate ellipses
 * Bezier curve
-* Chipmunk renderer (as its own module)
