@@ -1,12 +1,8 @@
-Version 0.9
+Version 0.91
 ===========
 * Rename 'meta' to something that doesn't conflict with an existing
   Moose method
 * Include files
-
-
-Version 0.91
-============
 * Arc
 * Rotate ellipses
 * Bezier curve
