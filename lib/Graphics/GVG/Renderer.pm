@@ -67,9 +67,10 @@ sub make_obj
 
 sub make_code
 {
-    my ($self, $ast) = @_;
+    my ($self, $ast, $target_class) = @_;
 
-    my $pack = $ast->meta_data->{class}
+    my $pack = $target_class
+        // $ast->meta_data->{class}
         // $self->make_pack;
     my $code = $self->make_opening_code( $pack, $ast );
     $code .= $self->_walk_ast( $pack, $ast, $ast );
