@@ -1,8 +1,3 @@
-Version 0.92
-============
-* Rename 'meta' to something that doesn't conflict with an existing
-  Moose method
-
 Version 0.93
 ===========
 * Include files
