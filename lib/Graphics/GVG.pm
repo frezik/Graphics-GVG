@@ -134,7 +134,7 @@ my $DSL = <<'END_DSL';
 
     Str ~ '"' StrChars '"'
 
-    StrChars ~ [\w\s]+
+    StrChars ~ [^"]+
 
     Number ~ Digits
         | Digits Dot Digits
@@ -167,7 +167,7 @@ my $DSL = <<'END_DSL';
 
     SemiColon ~ ';'
 
-    VarName ~ [\w]+
+    VarName ~ [\w_]+
 
     Whitespace ~ [\s]+
 

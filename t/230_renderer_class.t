@@ -1,4 +1,4 @@
-# Copyright (c) 2017  Timm Murray
+# Copyright (c) 2018  Timm Murray
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without 
@@ -21,49 +21,31 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 6;
+use Test::More tests => 2;
 use strict;
 use warnings;
 use Graphics::GVG;
 use Graphics::GVG::AST;
 use Graphics::GVG::Renderer;
+use Graphics::GVG::Renderer::DefaultCode;
 
 
 package RenderMock;
 use Moose;
+with 'Graphics::GVG::Renderer::DefaultCode';
 with 'Graphics::GVG::Renderer';
-use Test::More;
 
 
 sub class_suffix
 {
-    return 'Mock';
+    return '::Mock';
 }
 
-sub make_line
-{
-    pass( "Called _make_line" );
-}
-
-sub make_rect
-{
-    pass( "Called _make_rect" );
-}
-
-sub make_poly
-{
-    pass( "Called _make_poly" );
-}
-
-sub make_circle
-{
-    pass( "Called _make_circle" );
-}
-
-sub make_ellipse
-{
-    pass( "Called _make_ellipse" );
-}
+sub make_line {''}
+sub make_rect {''}
+sub make_poly {''}
+sub make_circle {''}
+sub make_ellipse {''}
 
 
 package MockClass::Mock;
@@ -74,19 +56,11 @@ sub call_pack
     pass( "Called call_pack" );
 }
 
-package MockClass2::Mock;
-use Test::More;
-
-sub call_pack2
-{
-    pass( "Called call_pack2" );
-}
-
 
 package main;
 
 my $CODE = <<'END';
-    !class_prefix = "MockClass";
+    !class_prefix = "MockClass::";
 
     line( #ff33ff00, 0, 0, 1, 1 );
     circle( #993399ff, 0, 0, 1.0 );
@@ -97,5 +71,9 @@ END
 
 my $gvg = Graphics::GVG->new;
 my $ast = $gvg->parse( $CODE );
-my ($code, $pack) = RenderMock->make_code( $ast );
-$pack->call_pack;
+my $class = RenderMock->make_class( $ast );
+# In this case, we want an exact match on the class name,
+# so we use cmp_ok() rather than isa_ok()
+cmp_ok( $class, 'eq', 'MockClass::Mock',
+    "Created class in the right place" );
+$class->call_pack;

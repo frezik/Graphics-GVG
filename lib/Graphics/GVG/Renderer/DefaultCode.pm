@@ -1,4 +1,4 @@
-# Copyright (c) 2017  Timm Murray
+# Copyright (c) 2018  Timm Murray
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without 
@@ -21,81 +21,34 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 6;
+package Graphics::GVG::Renderer::DefaultCode;
+
 use strict;
 use warnings;
-use Graphics::GVG;
-use Graphics::GVG::AST;
-use Graphics::GVG::Renderer;
+use Moose::Role;
 
 
-package RenderMock;
-use Moose;
-with 'Graphics::GVG::Renderer';
-use Test::More;
-
-
-sub class_suffix
+sub make_opening_code
 {
-    return 'Mock';
+    my ($self, $pack) = @_;
+
+    my $code = 'package ' . $pack . ';';
+    $code .= q!
+        use strict;
+        use warnings;
+    !;
+
+    return $code;
 }
 
-sub make_line
+sub make_closing_code
 {
-    pass( "Called _make_line" );
-}
-
-sub make_rect
-{
-    pass( "Called _make_rect" );
-}
-
-sub make_poly
-{
-    pass( "Called _make_poly" );
-}
-
-sub make_circle
-{
-    pass( "Called _make_circle" );
-}
-
-sub make_ellipse
-{
-    pass( "Called _make_ellipse" );
+    my ($self, $pack) = @_;
+    my $code = '1;';
+    return $code;
 }
 
 
-package MockClass::Mock;
-use Test::More;
+1;
+__END__
 
-sub call_pack
-{
-    pass( "Called call_pack" );
-}
-
-package MockClass2::Mock;
-use Test::More;
-
-sub call_pack2
-{
-    pass( "Called call_pack2" );
-}
-
-
-package main;
-
-my $CODE = <<'END';
-    !class_prefix = "MockClass";
-
-    line( #ff33ff00, 0, 0, 1, 1 );
-    circle( #993399ff, 0, 0, 1.0 );
-    rect( #ff33ff00, 0, 1, 2, 3.1 );
-    ellipse( #ff33ff00, 0, 0, 5.1, 3.4 );
-    poly( #ff33ff00, 0, 0, 4.3, 6, 30.2 );
-END
-
-my $gvg = Graphics::GVG->new;
-my $ast = $gvg->parse( $CODE );
-my ($code, $pack) = RenderMock->make_code( $ast );
-$pack->call_pack;
